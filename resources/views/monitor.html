@@ -1,0 +1,11 @@
+
+<div ng-controller="MonitorContainer" >
+	<div style="float:left;" ng-repeat="monitorData in monitorDatas" repeat-complete-listener class="site">
+		<div style="text-align:center;"><h4><a href="{{monitorData.Url}}">{{ monitorData.Url }}</a></h4></div>
+		<div style="position:relative;">
+			
+			<highchart id="{{monitorData.Name}}_1" config="monitorData.DataMix" class="chat"></highchart>
+			<!--<highchart id="{{monitorData.Name}}_2" config="monitorData.ResponseTime" class="chat"></highchart>-->
+		</div>
+	</div>
+</div>
