@@ -822,10 +822,6 @@ func main() {
     syslogSender = &SyslogSender{key:[]byte(cfg.System.Key)}
     go DnsCheck()
     
-    for{
-		time.Sleep(60 * time.Second)
-	}
-	os.Exit(0)
 
 
     SmtpServer= cfg.Mail.SmtpServer
