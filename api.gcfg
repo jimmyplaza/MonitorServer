@@ -1,0 +1,195 @@
+[g2server "http://10.7.9.60:9000"]
+To = jimmy.ko@nexusguard.com
+
+[g2server "https://g2.nexusguard.com"]
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+
+[g2server "https://g2portal.nexusguard.com"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
+[g2server "http://g2demo.nxg.me"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
+[g2server "https://g2api.nexusguard.com"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = andy.shih@nexusguard.com
+To = kevin.chiu@nexusguard.com
+
+[g2server "https://g2api2.nexusguard.com"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
+[g2server "https://gc.nexusguard.com"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
+[g2server "https://g2na1.nexusguard.com"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = andy.shih@nexusguard.com
+To = kevin.chiu@nexusguard.com
+
+[g2server "https://g2na2.nexusguard.com"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
+[g2server "https://www.nexusguard.com"] 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+To = andy.shih@nexusguard.com
+
+[g2server "https://portal.nexusguard.com"]
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
+
+[mail]
+SmtpServer = smtp.gmail.com
+Port = 465
+From = g2.service@nexusguard.com
+
+[monitorg2]
+site = https://g2.nexusguard.com
+site = http://g2.nexusguard.com
+site = http://g2demo.nxg.me
+site = https://g2api.nexusguard.com
+site = https://g2api2.nexusguard.com
+site = https://gc.nexusguard.com
+site = https://g2na1.nexusguard.com
+site = https://g2na2.nexusguard.com
+site = https://www.nexusguard.com
+site = https://portal.nexusguard.com
+
+;site = https://g2portal.nexusguard.com
+;site = https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=AnomalyStatus,Pageviews,Visitors,OnlineUser,Netflow,TopContentLoadingTime,SiteSpeed,dataCenter,dataCenterStatus,cddInfoData,cddWAFTop10IP,cddWAFTop10Category,cddWAFCountryRangeList
+
+;site = http://10.7.9.60:9000
+;site = https://g2ws.nexusguard.com/socket.io
+
+IntervalSeconds = 60
+SmtpServer = smtp.gmail.com
+Port = 465
+From = g2.service@nexusguard.com
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = matis.hsiao@nexusguard.com
+To = andy.shih@nexusguard.com
+
+[cacheratio]
+CheckTime = 15:59
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = olive.ting@nexusguard.com
+To = matis.hsiao@nexusguard.com
+To = andy.shih@nexusguard.com
+
+[monitordc]
+;Data Center
+;[1 1 1] means [HK MI SJ] all on monitor
+monitorList = AAH 1 1 1
+monitorList = EDB 1 0 0
+IntervalSeconds = 240 
+
+
+[monitorband]
+;Band Width
+;monitorList = AAH
+;monitorList = HKP 
+;monitorList = EDB
+;monitorList = HKOGCIO 
+
+IntervalSeconds = 120 
+SmtpServer = smtp.gmail.com
+Port = 465
+From = g2.service@nexusguard.com
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com 
+To = matis.hsiao@nexusguard.com
+To = andy.shih@nexusguard.com
+To = kevin.chiu@nexusguard.com
+
+[monitorCustomerSite]
+IntervalSeconds = 120 
+
+[system]
+key = syslogCert
+syslog = gc.nexusguard.com:7900
+
+[dnscheck]
+IntervalSeconds = 300 
+FilterCustomer = Riche88
+FilterCustomer = IMH 
+
+
+[gen]
+http = 443 
+debug	= true
+gcenter = gcapi.nexusguard.com
+gcenterPrd = gcapi.nexusguard.com
+;gcenter = gc.nexusguard.com:8080
+;gcenterPrd = gc.nexusguard.com:8080
+timeout = 10 
+sync		= 15
+
+[db]
+username = root
+password = devtw123456
+hostname = 127.0.0.1
+database = cw
+cron = 0 4 11 * * *
+backupTable = min_count
+backupTable = day_count
+backupTable = hour_count
+backupTable = 2min_count
+backupTable = 10min_count
+backupTable = 6hour_count
+clearTable = min_count
+saveTableDays = 30
+clearTable = day_count
+saveTableDays = 30
+clearTable = hour_count
+saveTableDays = 30
+clearTable = 2min_count
+saveTableDays = 30
+clearTable = 10min_count
+saveTableDays = 30
+clearTable = 6hour_count
+saveTableDays = 30
+
+[tracker]
+daycron = 0 0 0 * * *
+hourcron = 0 0 * * * *
+mincron = 0 * * * * *
+TwoMinCron = 0 */2 * * * *
+TenMinCron = 0 */10 * * * *
+SixHourCron = 0 0 */6 * * *
+LiveDataStoreExpired = 86400
+collector = 10.7.9.59:8082
+collector = 10.7.9.83:8082
+
+[waf]
+LiveDataStoreNum = 50
