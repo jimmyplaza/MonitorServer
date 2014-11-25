@@ -250,7 +250,6 @@ func MonitorCustomerServer(Url []string, seconds int, To []string){
 		flag_idx = 0
 		for _, url := range Url {	//monitor all url at array 
 			url  = strings.TrimSpace(url)
-			//url = "http://" + url
 			if cnt == 0 {
 				WriteToLogFile(url, "START MONITORING","", filepath2)
 			}
@@ -316,8 +315,8 @@ func MonitorCustomerServer(Url []string, seconds int, To []string){
 			}
 			jj.Errmsg = errMsg
 			jj.Rspstatus = rspStatus
-			url = strings.Replace(url, "https://", "",-1)
-			url = strings.Replace(url, "http://", "",-1)
+			//url = strings.Replace(url, "http://", "",-1)
+			url = strings.Replace(url, "//", "",-1)
 			ElkInput("g_monitor", url, jj)
 
 			flag_idx++
@@ -614,12 +613,25 @@ func ConfigInit() {
         url := fmt.Sprintf("https://%s/api/customer/list/%s", cfg.Gen.GCenter, GetToken())
         customer.mu.Lock()
         customer.List = getCustomers(url)
+        //fmt.Println(customer.List)
+        //SiteHttpList
+        //SiteHttpsList
 		for i, _ := range customer.List{
 			SId := customer.List[i].SiteAliasList
+			Https := customer.List[i].SiteHttpsList
+			Http := customer.List[i].SiteHttpList
 			//fmt.Println(SId)
-			for _, site := range SId{
-				site = "http://" + site
-				allCustomerSite = append(allCustomerSite, site)
+			for i, site := range SId{
+				if Https[i] == "443" {
+					site_https := "https://" + site
+					allCustomerSite = append(allCustomerSite, site_https)
+					fmt.Println(site_https)
+				}
+				if Http[i] == "80" {
+					site_http := "http://" + site
+					allCustomerSite = append(allCustomerSite, site_http)
+					fmt.Println(site_http)
+				}
 			}
 		}
 		allCustomerSite = removeDuplicates(allCustomerSite)
@@ -660,31 +672,50 @@ Change: (Change/NotChange)
 
 type JsonDnsType struct {
 	CustomerName string `json:"customername"`
-	Status string `json:"status"` 
+	Site string `json:"site"`
+	Status int `json:"status"` 
 	Timestamp string `json:"@timestamp"`
 	CurrentIP string `json:"currentip"`
-	Change string `json:Change`
+	Change int `json:"change"`
 } 
 
+/*
+visitedURL := map[string]bool {
+    "http://www.google.com": true,
+    "https://paypal.com": true,
+}
+if visitedURL[thisSite] {
+    fmt.Println("Already been here.")
+}
+*/
 
 func DnsCheck(){
 	IntervalSeconds := cfg.DnsCheck.IntervalSeconds
+	FilterCustomerList := cfg.DnsCheck.FilterCustomer
+	visitedURL := make(map[string]bool)
+	for _, site := range FilterCustomerList{
+		visitedURL[site] = true 
+	}
+
 	wg := new(sync.WaitGroup)
 	dnsSite.List = make(map[string]string)
 	jj := JsonDnsType{}
 	for {
 		for i, _ := range customer.List{
 			CustomerName := customer.List[i].MoAlias 
+			if visitedURL[CustomerName] {
+				continue
+			}
 			SiteAlias := customer.List[i].SiteAliasList
-
-			DomainList := customer.List[i].DomainList
-			fmt.Println(DomainList)
-			for i, site := range SiteAlias {
+			//DomainList := customer.List[i].DomainList
+			//fmt.Println(DomainList)
+			for _, site := range SiteAlias {
 				wg.Add(1)
 	        	//go exe_cmd(str, wg)
 	        	cmdstr := "dig +short " + site 
-	        	fmt.Println("Domain: ", DomainList[i])
+	        	//fmt.Println("Domain: ", DomainList[i])
 	        	currentip := exe_cmd(cmdstr, wg)
+	        	jj.Site = site
 	        	if currentip != "" {
 		        	fmt.Println(currentip)
 		        	curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04") )
@@ -694,22 +725,22 @@ func DnsCheck(){
 
 		        	if dnsSite.List[site] == "" {//First time, store value at mem
 		        		dnsSite.List[site] = currentip
-		        		jj.Change = "NOTCHANGE"
+		        		jj.Change = 0  //NOTCHANGE
 		        	} else{
 		        		if dnsSite.List[site] == currentip{
-		        			jj.Change = "NOTCHANGE"
-		        		}else{
-		        			jj.Change = "CHANGE"
+		        			jj.Change = 0  //NOTCHANGE
+ 		        		}else{
+		        			jj.Change = 1 //CHANGE
 		        		}
 		        	}
 		        	jj.CurrentIP = currentip
 		        	if currentip[:6] == "27.126"{
-			        	jj.Status = "G2"
+			        	jj.Status = 0 //"G2"
 		        	} else{
-		        		jj.Status = "NOTG2"
+		        		jj.Status = 1//"NOTG2"
 		        	}
 		        	//fmt.Println(jj)
-	        		ElkInput("ggtest", "dnscheck", jj)
+	        		ElkInput("dnscheck", "dnschange", jj)
 	        	}
 			} //for Site Alias
 		} // for customer.List
@@ -820,29 +851,23 @@ func main() {
     customer = &Customers{mu: &sync.Mutex{}}
     ConfigInit()   //Read api.gcfg config, get customer.List & allCustomerSite
     syslogSender = &SyslogSender{key:[]byte(cfg.System.Key)}
-    go DnsCheck()
     
-
-
     SmtpServer= cfg.Mail.SmtpServer
 	Port = cfg.Mail.Port
 	From = cfg.Mail.From
 	To1 := cfg.Monitorg2.To
 	
 
-
-	// ===================== G2 component Site ===================
-	
-	Url := cfg.Monitorg2.Site
-	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
-		// ===================== Customer Site ===================
+	// ===================== Customer Site ===================
 	IntervalSeconds2 := cfg.MonitorCustomerSite.IntervalSeconds
 	go MonitorCustomerServer(allCustomerSite, IntervalSeconds2, To1)
 
-
+	// ===================== G2 component Site ===================
+	Url := cfg.Monitorg2.Site
+	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
 	go MonitorG2Server(Url, IntervalSeconds, To1)
 
-	
+    go DnsCheck()
 
 	//===================== Portal Customer Bandwidth ===================
 	go MonitorBandwidth()
