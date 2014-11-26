@@ -217,8 +217,8 @@ func MonitorG2Server(Url []string, seconds int, Too []string){
 			}
 			jj.Errmsg = errMsg
 			jj.Rspstatus = rspStatus
-			url = strings.Replace(url, "https://", "",-1)
-			url = strings.Replace(url, "http://", "",-1)
+			url = strings.Replace(url, "//", "",-1)
+
 
 			ElkInput("g_monitor", url, jj)
 			flag_idx++
@@ -690,6 +690,7 @@ if visitedURL[thisSite] {
 */
 
 func DnsCheck(){
+	To := cfg.DnsCheck.To
 	IntervalSeconds := cfg.DnsCheck.IntervalSeconds
 	FilterCustomerList := cfg.DnsCheck.FilterCustomer
 	visitedURL := make(map[string]bool)
@@ -731,6 +732,10 @@ func DnsCheck(){
 		        			jj.Change = 0  //NOTCHANGE
  		        		}else{
 		        			jj.Change = 1 //CHANGE
+		        			title := "[" + CustomerName + "] -" + site + " DNS IP is change!"  
+		        			errMsg := "[" + CustomerName + "] -" + site + " change to " + currentip
+		        			rspStatus := ""
+							MorningMail(SmtpServer, Port, From, To,  title, errMsg, rspStatus)
 		        		}
 		        	}
 		        	jj.CurrentIP = currentip
@@ -866,6 +871,7 @@ func main() {
 	Url := cfg.Monitorg2.Site
 	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
 	go MonitorG2Server(Url, IntervalSeconds, To1)
+
 
     go DnsCheck()
 

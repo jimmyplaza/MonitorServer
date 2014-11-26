@@ -29,6 +29,8 @@ type Command struct {
 type cfgObject struct {
 	DnsCheck struct {
 		IntervalSeconds int 
+		To []string
+		FilterCustomer []string
 	}
 	System struct {
 		Key string
@@ -124,6 +126,8 @@ type customerObject struct {
 	ModuleMd5List  []string
 	UpstreamList   []string
 	SiteModuleList []map[string]map[string]string
+	SiteHttpList   []string
+	SiteHttpsList   []string
 }
 
 //Tracker
