@@ -143,7 +143,7 @@ syslog = gc.nexusguard.com:7900
 IntervalSeconds = 300 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
-To = thomas.wang@nexusguard.com
+;To = thomas.wang@nexusguard.com
 FilterCustomer = Riche88
 FilterCustomer = IMH 
 
