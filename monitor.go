@@ -31,6 +31,15 @@ type JsonType struct {
 	Rspstatus    string `json:rspstatus`
 }
 
+type JsonDnsType struct {
+	CustomerName string `json:"customername"`
+	Site         string `json:"site"`
+	Status       int    `json:"status"`
+	Timestamp    string `json:"@timestamp"`
+	CurrentIP    string `json:"currentip"`
+	Change       int    `json:"change"`
+}
+
 var debug *bool
 var syslogSender *SyslogSender
 var filepath1 string = "./log/"
@@ -43,6 +52,9 @@ var allsite AllSite
 var allCustomerSite []string
 var g2Site []string
 var dnsSite DnsSite
+var SmtpServer string
+var Port string
+var From string
 
 func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
 	return func(netw, addr string) (net.Conn, error) {
@@ -55,7 +67,32 @@ func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c 
 	}
 }
 
-func GetCacheRatio() (ReqRatio, LegRatio float32) {
+func HttpsGet(url string, funcName string) (rspstring string, err error) {
+	var myClient = &http.Client{
+		Transport: &http.Transport{
+			Dial: timeoutDialer(time.Duration(10)*time.Second,
+				time.Duration(10)*time.Second),
+			ResponseHeaderTimeout: time.Second * 10,
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //for https
+		},
+	}
+	response, err := myClient.Get(url)
+	if err != nil {
+		fmt.Printf("[%s] http.Get => %v", funcName, err.Error())
+		return "", err
+	}
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("[%s] readall err: %s", funcName, err)
+		return "", err
+	}
+	rspstring = string(contents)
+	return rspstring, nil
+
+}
+
+func CheckVariation() (ReqRatio, LegRatio float64) {
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&kind=60&length=24&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=cddInfoData"
 	var myClient = &http.Client{
 		Transport: &http.Transport{
@@ -67,14 +104,13 @@ func GetCacheRatio() (ReqRatio, LegRatio float32) {
 	}
 	response, err := myClient.Get(url)
 	if err != nil {
-		//log.Fatalf("http.Get => %v", err.Error())
-		fmt.Printf("[GetCacheRatio] http.Get => %v", err.Error())
+		fmt.Printf("[CheckVariation] http.Get => %v", err.Error())
 		return
 	}
 	defer response.Body.Close()
 	contents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		fmt.Printf("[GetCacheRatio] readall err: %s", err)
+		fmt.Printf("[CheckVariation] readall err: %s", err)
 		return
 	}
 	data := map[string]interface{}{}
@@ -87,32 +123,11 @@ func GetCacheRatio() (ReqRatio, LegRatio float32) {
 	Legitimated, _ := jq.Int("cddInfoData", "Legitimated", "Legitimated")
 	Upstream, _ := jq.Int("cddInfoData", "Upstream", "Upstream")
 	CacheHit, _ := jq.Int("cddInfoData", "CacheData", "CacheHit")
-	//ReqRatio = ( TotalRequest - Threats - Legitimated ) / TotalRequest
-	ReqRatio = (float32(TotalRequest) - float32(Threats) - float32(Legitimated)) / float32(TotalRequest)
-	//( Legitimated  - cache hit - Served by origin(Upsream) ) / Legitimated
-	LegRatio = (float32(Legitimated) - float32(CacheHit) - float32(Upstream)) / float32(Legitimated)
+	ReqRatio = (float64(TotalRequest) - float64(Threats) - float64(Legitimated)) / float64(TotalRequest)
+	LegRatio = (float64(Legitimated) - float64(CacheHit) - float64(Upstream)) / float64(Legitimated)
 	return ReqRatio, LegRatio
-	/*
-	   fmt.Println("TotalRequest: ",TotalRequest)
-	   fmt.Println("Threats: ",Threats)
-	   fmt.Println("Legitimated: ",Legitimated)
-	   fmt.Println("Upstream: ", Upstream)
-	   fmt.Println("CacheHit: ", CacheHit)
-	*/
-
-	//var m interface{}
-	//var str map[string]interface{}
-	//TotalRequest := str["cddInfoData"].(map[string]interface{})["Reqs"].(map[string]interface{})["reqs"]
-	//Threats := str["cddInfoData"].(map[string]interface{})["Threats"].(map[string]interface{})["threats"]
-	//Legitimated := str["cddInfoData"].(map[string]interface{})["Legitimated"].(map[string]interface{})["Legitimated"]
-	//var to int
-	//to = strconv.Atoi(TotalRequest)
-	//fmt.Println(reflect.TypeOf(TotalRequest))
-	//fmt.Println(reflect.TypeOf(Threats))
-	//fmt.Println(reflect.TypeOf(Legitimated))
 }
 
-//func MonitorG2Server(Url []string, seconds int, SmtpServer string, Port string, From string, Too []string){
 func MonitorG2Server(Url []string, seconds int, Too []string) {
 	//url_arr := strings.Split(Url,"@")
 	//var flag bool
@@ -179,8 +194,9 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				if flag_arr[flag_idx] == false && rspCode != 302 {
 					//fmt.Println("***********")
 					//fmt.Println(rspCode)
+					title := "[" + url + "status"
 					//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
-					MorningMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
+					MorningMail(SmtpServer, Port, From, To, title, errMsg, rspStatus)
 					WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
 					//WriteToSyslog(0,"Monitor",errMsg)
 					flag_arr[flag_idx] = true
@@ -617,12 +633,12 @@ func ConfigInit() {
 			if Https[i] == "443" {
 				site_https := "https://" + site
 				allCustomerSite = append(allCustomerSite, site_https)
-				fmt.Println(site_https)
+				//fmt.Println(site_https)
 			}
 			if Http[i] == "80" {
 				site_http := "http://" + site
 				allCustomerSite = append(allCustomerSite, site_http)
-				fmt.Println(site_http)
+				//fmt.Println(site_http)
 			}
 		}
 	}
@@ -652,23 +668,6 @@ func exe_cmd(cmd string, wg *sync.WaitGroup) (output string) {
 }
 
 /*
-CustomerName
-@timestamp
-Status: (G2/NotG2)
-CurrentIP:
-Change: (Change/NotChange)
-*/
-
-type JsonDnsType struct {
-	CustomerName string `json:"customername"`
-	Site         string `json:"site"`
-	Status       int    `json:"status"`
-	Timestamp    string `json:"@timestamp"`
-	CurrentIP    string `json:"currentip"`
-	Change       int    `json:"change"`
-}
-
-/*
 visitedURL := map[string]bool {
     "http://www.google.com": true,
     "https://paypal.com": true,
@@ -677,6 +676,87 @@ if visitedURL[thisSite] {
     fmt.Println("Already been here.")
 }
 */
+
+func CheckCacheRatio() {
+
+	var myClient = &http.Client{
+		Transport: &http.Transport{
+			Dial: timeoutDialer(time.Duration(15)*time.Second, 15*time.Second),
+			ResponseHeaderTimeout: time.Second * 10,
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //for https
+		},
+	}
+	seconds := cfg.CheckCacheRatio.IntervalSeconds
+	To := cfg.CheckCacheRatio.To
+	CacheRatioBound := cfg.CheckCacheRatio.CacheRatioBound
+
+	MonitorList := cfg.CheckCacheRatio.MonitorList
+	MonitorArray := make(map[string]bool)
+	for _, MoAlias := range MonitorList {
+		MonitorArray[MoAlias] = true
+	}
+
+	var url_arr []string
+	var errMsg []string
+
+	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&kind=60&length=24&site_id=%s&type=cddInfoData"
+	for i, _ := range customer.List {
+		CId := customer.List[i].MoId
+		MoAlias := customer.List[i].MoAlias
+		if MonitorArray[MoAlias] == true {
+			//fmt.Println(MoAlias)
+			for s, SId := range customer.List[i].SiteList {
+				urlstr := fmt.Sprintf(tmpurl, CId, SId)
+				//fmt.Println(urlstr)
+				url_arr = append(url_arr, urlstr)
+				errstr := "[" + MoAlias + "] -" + customer.List[i].SiteAliasList[s]
+				//fmt.Println(errstr)
+				errMsg = append(errMsg, errstr)
+			}
+		}
+	}
+
+	for {
+		for u, url := range url_arr { //monitor all url at array
+			//fmt.Println("url: " + url)
+			response, err := myClient.Get(url)
+			if err != nil {
+				fmt.Printf("%s", err)
+				continue
+			} else {
+				defer response.Body.Close()
+				contents, err := ioutil.ReadAll(response.Body)
+				if err != nil {
+					fmt.Printf("%s", err)
+					continue
+				}
+				data := map[string]interface{}{}
+				dec := json.NewDecoder(strings.NewReader(string(contents)))
+				dec.Decode(&data)
+				jq := jsonq.NewQuery(data)
+
+				TotalRequest, _ := jq.Int("cddInfoData", "Reqs", "reqs")
+				Upstream, _ := jq.Int("cddInfoData", "Upstream", "Upstream")
+				CacheRatio, _ := jq.Int("cddInfoData", "CacheData", "CachePercent")
+				ratio := strconv.Itoa(CacheRatio)
+				if CacheRatio < CacheRatioBound {
+					title := errMsg[u] + " Cache rate abnormal!"
+					body := errMsg[u] + " current ratio: " + ratio + "%"
+					fmt.Println(title)
+					fmt.Println(body)
+					MorningMail(SmtpServer, Port, From, To, title, body, "")
+				}
+				a := (float64(Upstream) / float64(TotalRequest)) * 100
+				if a > 80 {
+					title := errMsg[u] + " - Upstream & Total Request variation lower than 80%"
+					body := errMsg[u] + " - Upstream/Total Request ratio: " + strconv.FormatFloat(a, 'g', 2, 64) + "%"
+					MorningMail(SmtpServer, Port, From, To, title, body, "")
+				}
+			}
+		}
+		time.Sleep(time.Duration(seconds) * time.Second)
+	}
+}
 
 func DnsCheck() {
 	To := cfg.DnsCheck.To
@@ -775,8 +855,8 @@ func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg, rs
 			ResponseHeaderTimeout: time.Second * 10,
 		},
 	}
-	BodyMsg = "[" + Title + "]" + " is down\n" + "STATUS CODE: " + rspStatus + "\nERROR: " + BodyMsg
-	Title = "[G2Monitor]" + " - [" + Title + "]" + " status: stop "
+	BodyMsg = Title + "]" + "<br>STATUS CODE: " + rspStatus + "<br>ERROR: " + BodyMsg
+	Title = "[G2Monitor]" + " - [" + Title + "]"
 
 	v := url.Values{}
 	v.Set("to", To)
@@ -840,9 +920,18 @@ DCenter:         @timestamp, normal/error,  [MoAlias], Site, DC
 
 */
 
-var SmtpServer string
-var Port string
-var From string
+func MonitorVariation(CheckTime string) {
+	Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+	if Now == CheckTime {
+		a, b := CheckVariation()
+		ReqRatio := strconv.FormatFloat(a, 'g', 2, 64)
+		LegRatio := strconv.FormatFloat(b, 'g', 2, 64)
+		To4 := cfg.CheckVariation.To
+		url := "[G2Monitor] - " + "Legitimate variation &  " + "Served by origin variation"
+		errMsg := "[G2Monitor] - " + "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
+		MorningMail(SmtpServer, Port, From, To4, url, errMsg, "")
+	}
+}
 
 func main() {
 	debug = flag.Bool("debug", false, "Show debug information.")
@@ -860,12 +949,9 @@ func main() {
 	From = cfg.Mail.From
 	To1 := cfg.Monitorg2.To
 
+	go CheckCacheRatio()
+
 	go DnsCheck()
-	/*
-		for {
-			time.Sleep(60 * time.Second)
-		}
-	*/
 
 	// ===================== Customer Site ===================
 	IntervalSeconds2 := cfg.MonitorCustomerSite.IntervalSeconds
@@ -883,21 +969,9 @@ func main() {
 	IntervalSeconds0 := cfg.MonitorDC.IntervalSeconds
 	go MonitorDataCenter(IntervalSeconds0, To1)
 
-	//==================== Start Server Service ==================
-	//go httpService()
-	CheckTime := cfg.Cacheratio.CheckTime
+	CheckTime := cfg.CheckVariation.CheckTime
 	for {
-		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
-
-		if Now == CheckTime {
-			a, b := GetCacheRatio()
-			ReqRatio := fmt.Sprintf("%s", a)
-			LegRatio := fmt.Sprintf("%s", b)
-			To4 := cfg.Cacheratio.To
-			url := "[G2Monitor] - " + "Legitimate variation &  " + "Served by origin variation"
-			errMsg := "[G2Monitor] - " + "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
-			MorningMail(SmtpServer, Port, From, To4, url, errMsg, "")
-		}
+		MonitorVariation(CheckTime)
 		time.Sleep(60 * time.Second)
 	}
 

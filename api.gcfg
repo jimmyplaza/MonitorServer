@@ -97,7 +97,17 @@ To = steve.tsai@nexusguard.com
 To = matis.hsiao@nexusguard.com
 To = andy.shih@nexusguard.com
 
-[cacheratio]
+[checkcacheratio]
+IntervalSeconds = 1200 
+;CacheRatioBound < 43 , alert
+CacheRatioBound = 43 
+To = jimmy.ko@nexusguard.com
+;To = chris.liu@nexusguard.com
+monitorList = AAH
+monitorList = EDB
+;monitorList = HKP 
+
+[checkvariation]
 CheckTime = 15:59
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com

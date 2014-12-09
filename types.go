@@ -36,7 +36,13 @@ type cfgObject struct {
 		Key string
 		Syslog string
 	}
-	Cacheratio struct {
+	CheckCacheRatio struct {
+		IntervalSeconds int 
+		CacheRatioBound int
+		To []string
+		MonitorList []string
+	}
+	CheckVariation struct {
 		CheckTime string
 		To []string
 	}
