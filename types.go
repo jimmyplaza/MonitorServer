@@ -27,6 +27,11 @@ type Command struct {
 }
 
 type cfgObject struct {
+	GetReport struct {
+		CheckTime string
+		IntervalSeconds int 
+		To []string
+	}
 	DnsCheck struct {
 		IntervalSeconds int 
 		To []string

@@ -23,7 +23,7 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = andy.shih@nexusguard.com
-To = kevin.chiu@nexusguard.com
+;To = kevin.chiu@nexusguard.com
 
 [g2server "https://g2api2.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -42,7 +42,7 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = andy.shih@nexusguard.com
-To = kevin.chiu@nexusguard.com
+;To = kevin.chiu@nexusguard.com
 
 [g2server "https://g2na2.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -97,12 +97,26 @@ To = steve.tsai@nexusguard.com
 To = matis.hsiao@nexusguard.com
 To = andy.shih@nexusguard.com
 
+[getreport]
+CheckTime = 15:59
+IntervalSeconds = 60 
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = olive.ting@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
+
+
 [checkcacheratio]
 IntervalSeconds = 1200 
 ;CacheRatioBound < 43 , alert
 CacheRatioBound = 43 
 To = jimmy.ko@nexusguard.com
-;To = chris.liu@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = olive.ting@nexusguard.com
+To = matis.hsiao@nexusguard.com
 monitorList = AAH
 monitorList = EDB
 ;monitorList = HKP 
@@ -153,7 +167,8 @@ syslog = gc.nexusguard.com:7900
 IntervalSeconds = 300 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
-;To = thomas.wang@nexusguard.com
+To = matis.hsiao@nexusguard.com
+To = olive.ting@nexusguard.com
 FilterCustomer = Riche88
 FilterCustomer = IMH 
 

@@ -40,6 +40,22 @@ type JsonDnsType struct {
 	Change       int    `json:"change"`
 }
 
+type JsonReportType struct {
+	Timestamp     string `json:"@timestamp"`
+	OnlineUser    int    `json:"onlineuser"`
+	Pageviews     int    `json:"pageviews"`
+	Visitors      int    `json:"visitors"`
+	Threats       int    `json:"threats"`
+	Bandwidth     int    `json:"bandwidth"`
+	BandwidthPeak int    `json:"bandwithpeak"`
+	TotalRequest  int    `json:"totalrequest"`
+	CacheHit      int    `json:"cachehit"`
+	Legitimated   int    `json:"legitimated"`
+	CacheRatio    int    `json:"cacheratio"`
+	Upstream      int    `json:"upstream"`
+	SiteSpeed     int    `json:"sitespeed"`
+}
+
 var debug *bool
 var syslogSender *SyslogSender
 var filepath1 string = "./log/"
@@ -129,8 +145,6 @@ func CheckVariation() (ReqRatio, LegRatio float64) {
 }
 
 func MonitorG2Server(Url []string, seconds int, Too []string) {
-	//url_arr := strings.Split(Url,"@")
-	//var flag bool
 	var flag_arr = make([]bool, len(Url))
 	var cnt int = 0
 	var flag_idx int
@@ -157,24 +171,17 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 			} else {
 				To = Too
 			}
-
 			if cnt == 0 {
 				WriteToLogFile(url, "START MONITORING", "", filepath1)
-				//WriteToSyslog(5,"Monitor","START MONITORING")
 			}
 			t1 := time.Now()
 			nanoold := time.Now().UnixNano() / 1000000 //to ms
 			rsptime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
 			rsptime = strings.Replace(rsptime, " ", "T", 1)
-
 			response, err := myClient.Get(url)
-
 			nanonew := time.Now().UnixNano() / 1000000 //to ms
 			responseTime := fmt.Sprintf("%s", time.Now().Sub(t1))
-
 			jj.ResponseTime = nanonew - nanoold
-
-			//jj.Timestamp = fmt.Sprintf("%s", t1)
 			jj.Timestamp = rsptime
 			jj.Url = url
 			var rspStatus string
@@ -192,13 +199,11 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				jj.Status = 1
 				WriteToJsonFile(jj)
 				if flag_arr[flag_idx] == false && rspCode != 302 {
-					//fmt.Println("***********")
-					//fmt.Println(rspCode)
-					title := "[" + url + "status"
+					Title := "G2-Component] - " + url + " - Status"
+					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 					//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
-					MorningMail(SmtpServer, Port, From, To, title, errMsg, rspStatus)
+					MorningMail(SmtpServer, Port, From, To, Title, Body)
 					WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
-					//WriteToSyslog(0,"Monitor",errMsg)
 					flag_arr[flag_idx] = true
 				}
 				//err != nil, response is nil, do response.Body.Close() will get
@@ -217,16 +222,15 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 					if flag_arr[flag_idx] == false {
 						fmt.Println(rspStatus)
 						//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
-						MorningMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
+						Title := "G2-Component] - " + url + " - Status"
+						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+						MorningMail(SmtpServer, Port, From, To, Title, Body)
 						WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
-						//WriteToSyslog(0,"Monitor",errMsg)
 						flag_arr[flag_idx] = true
 					}
 				}
 				//err = nil, response is not nil, need to Close()
-
 				response.Body.Close()
-				//ElkInput(index, table, "", obj interface{}){
 			}
 			jj.Errmsg = errMsg
 			jj.Rspstatus = rspStatus
@@ -427,7 +431,7 @@ func MonitorBandwidth() {
 				fmt.Println(MoAlias)
 				urlstr := tmpurl + CId + "&length=5"
 				url_arr = append(url_arr, urlstr)
-				errstr := MoAlias + tmperr
+				errstr := "[Monitor Bandwidth] - " + MoAlias + tmperr
 				errMsg = append(errMsg, errstr)
 			}
 		}
@@ -474,7 +478,7 @@ func MonitorBandwidth() {
 				fmt.Println(m)
 				for i := 0; i < len(m); i++ {
 					if m[i] == 0 {
-						MorningMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u], "")
+						MorningMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
 						//WriteToSyslog(0,"Monitor",errMsg[u])
 						//SendMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u], rspStatus)
 					}
@@ -584,7 +588,6 @@ func MonitorDataCenter(seconds int, To []string) {
 									//fmt.Println("old: ",allsite.List[CId][SId][t].CenterCount)
 									//fmt.Println("new: ", m["DataCenter"][t].CenterCount )
 									if allsite.List[CId][SId][t].CenterCount == m["DataCenter"][t].CenterCount || m["DataCenter"][t].CenterCount == 0 {
-										rspStatus := ""
 										var url string
 										var errMsg string
 										if m["DataCenter"][t].CenterCount == 0 {
@@ -597,7 +600,9 @@ func MonitorDataCenter(seconds int, To []string) {
 										WriteToLogFile("DCenter", errMsg, responseTime, filepath1)
 										//WriteToSyslog(0,"Monitor-DCenter",errMsg)
 										//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
-										MorningMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
+										Title := "[Data Center Request]: " + url
+										Body := Title + "<br>" + errMsg
+										MorningMail(SmtpServer, Port, From, To, Title, Body)
 									} else {
 										allsite.List[CId][SId][t].CenterCount = m["DataCenter"][t].CenterCount
 										Msg := "[Normal][" + customer.List[i].MoAlias + "]" + " -  " + "[" + customer.List[i].SiteAliasList[s] + "]" + " - " + allsite.List[CId][SId][t].CenterName + " DC" + " - [" + strconv.Itoa(m["DataCenter"][t].CenterCount) + "]"
@@ -740,17 +745,15 @@ func CheckCacheRatio() {
 				CacheRatio, _ := jq.Int("cddInfoData", "CacheData", "CachePercent")
 				ratio := strconv.Itoa(CacheRatio)
 				if CacheRatio < CacheRatioBound {
-					title := errMsg[u] + " Cache rate abnormal!"
-					body := errMsg[u] + " current ratio: " + ratio + "%"
-					fmt.Println(title)
-					fmt.Println(body)
-					MorningMail(SmtpServer, Port, From, To, title, body, "")
+					Title := "[Check Cache Ratio]" + errMsg[u] + " Cache rate abnormal!"
+					Body := errMsg[u] + "<br>Current ratio: " + ratio + "%"
+					MorningMail(SmtpServer, Port, From, To, Title, Body)
 				}
 				a := (float64(Upstream) / float64(TotalRequest)) * 100
 				if a > 80 {
-					title := errMsg[u] + " - Upstream & Total Request variation lower than 80%"
-					body := errMsg[u] + " - Upstream/Total Request ratio: " + strconv.FormatFloat(a, 'g', 2, 64) + "%"
-					MorningMail(SmtpServer, Port, From, To, title, body, "")
+					title := "[Check Upstream & TotalRequest Ratio]" + errMsg[u] + " - Upstream & Total Request variation more than 80%"
+					body := errMsg[u] + "<br>Upstream/Total Request ratio: " + strconv.FormatFloat(a, 'g', 2, 64) + "%"
+					MorningMail(SmtpServer, Port, From, To, title, body)
 				}
 			}
 		}
@@ -810,10 +813,9 @@ func DnsCheck() {
 								}*/
 						} else {
 							jj.Change = 1 //CHANGE
-							title := "[" + CustomerName + "] -" + site + " DNS IP is change!"
-							errMsg := "[" + CustomerName + "] -" + site + " from " + dnsSite.List[site] + " change to " + currentip
-							rspStatus := ""
-							MorningMail(SmtpServer, Port, From, To, title, errMsg, rspStatus)
+							Title := "[DNS CHANGE]" + "[" + CustomerName + "] -" + site + " DNS IP change!"
+							Body := "[" + CustomerName + "] -" + site + " from " + dnsSite.List[site] + " change to " + currentip
+							MorningMail(SmtpServer, Port, From, To, Title, Body)
 						}
 						dnsSite.List[site] = currentip
 					}
@@ -841,7 +843,7 @@ func WriteToSyslog(level int, remote string, msg string) {
 	syslogSender.Write("udp", cfg.System.Syslog, level, "MonitorSys", logMsg)
 }
 
-func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg, rspStatus string) {
+func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg string) {
 	var To string
 	for _, t := range Too {
 		To = To + t + " , "
@@ -855,8 +857,9 @@ func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg, rs
 			ResponseHeaderTimeout: time.Second * 10,
 		},
 	}
-	BodyMsg = Title + "]" + "<br>STATUS CODE: " + rspStatus + "<br>ERROR: " + BodyMsg
 	Title = "[G2Monitor]" + " - [" + Title + "]"
+	BodyMsg = Title + "<br>" + BodyMsg
+	//BodyMsg = Title + "]" + "<br>STATUS CODE: " + rspStatus + "<br>ERROR: " + BodyMsg
 
 	v := url.Values{}
 	v.Set("to", To)
@@ -927,10 +930,81 @@ func MonitorVariation(CheckTime string) {
 		ReqRatio := strconv.FormatFloat(a, 'g', 2, 64)
 		LegRatio := strconv.FormatFloat(b, 'g', 2, 64)
 		To4 := cfg.CheckVariation.To
-		url := "[G2Monitor] - " + "Legitimate variation &  " + "Served by origin variation"
-		errMsg := "[G2Monitor] - " + "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
-		MorningMail(SmtpServer, Port, From, To4, url, errMsg, "")
+		Title := "Legitimate variation &  " + "Served by origin variation"
+		Body := "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
+		MorningMail(SmtpServer, Port, From, To4, Title, Body)
 	}
+}
+
+func GetReport() {
+	funcname := "GetReport"
+	CheckTime := cfg.GetReport.CheckTime
+	To := cfg.GetReport.To
+	IntervalSeconds := cfg.GetReport.IntervalSeconds
+	jj := JsonReportType{}
+
+	//AAH only
+	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
+	for {
+		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+		content_str, err := HttpsGet(url, "GetReport")
+		if err != nil {
+			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
+			continue
+		}
+		data := map[string]interface{}{}
+		dec := json.NewDecoder(strings.NewReader(content_str))
+		dec.Decode(&data)
+		jq := jsonq.NewQuery(data)
+		OnlineUser, _ := jq.Int("OnlineUser", "S-76a919a5-a247-4728-9860-817b644bfe85")
+		Pageviews, _ := jq.Int("AvgPage", "Pageviews")
+		Visitors, _ := jq.Int("AvgPage", "Visitors")
+		Threats, _ := jq.Int("cddInfoData", "Threats", "threats")
+		Bandwidth, _ := jq.Int("Netflow", "BandwidthIn")
+		BandwidthPeak, _ := jq.Int("Netflow", "BandwidthMaxIn")
+		TotalRequest, _ := jq.Int("cddInfoData", "Reqs", "reqs")
+		CacheHit, _ := jq.Int("cddInfoData", "CacheData", "CacheHit")
+		Legitimated, _ := jq.Int("cddInfoData", "Legitimated", "Legitimated")
+		CacheRatio, _ := jq.Int("cddInfoData", "CacheData", "CachePercent")
+		Upstream, _ := jq.Int("cddInfoData", "Upstream", "Upstream")
+		SiteSpeed, _ := jq.Int("SiteSpeed", "count")
+
+		if Now == CheckTime {
+			content := "OnlineUser: " + strconv.Itoa(OnlineUser) + "<br>" +
+				"Pageviews: " + strconv.Itoa(Pageviews) + "<br>" +
+				"Visitors: " + strconv.Itoa(Visitors) + "<br>" +
+				"Threats: " + strconv.Itoa(Threats) + "<br>" +
+				"Bandwidth: " + strconv.Itoa(Bandwidth) + "<br>" +
+				"BandwidthPeak: " + strconv.Itoa(BandwidthPeak) + "<br>" +
+				"TotalRequest: " + strconv.Itoa(TotalRequest) + "<br>" +
+				"CacheHit: " + strconv.Itoa(CacheHit) + "<br>" +
+				"Legitimated: " + strconv.Itoa(Legitimated) + "<br>" +
+				"CacheRatio: " + strconv.Itoa(CacheRatio) + "<br>" +
+				"Upstream: " + strconv.Itoa(Upstream) + "<br>" +
+				"SiteSpeed: " + strconv.Itoa(SiteSpeed)
+			Title := "Report"
+			Body := content
+			MorningMail(SmtpServer, Port, From, To, Title, Body)
+		}
+		curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
+		curtime = strings.Replace(curtime, " ", "T", 1)
+		jj.Timestamp = curtime
+		jj.OnlineUser = OnlineUser
+		jj.Pageviews = Pageviews
+		jj.Visitors = Visitors
+		jj.Threats = Threats
+		jj.Bandwidth = Bandwidth
+		jj.BandwidthPeak = BandwidthPeak
+		jj.TotalRequest = TotalRequest
+		jj.CacheHit = CacheHit
+		jj.Legitimated = Legitimated
+		jj.CacheRatio = CacheRatio
+		jj.Upstream = Upstream
+		jj.SiteSpeed = SiteSpeed
+
+		ElkInput("report_idx", "report", jj)
+		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //300 sec
+	} //Forever loop
 }
 
 func main() {
@@ -972,6 +1046,7 @@ func main() {
 	CheckTime := cfg.CheckVariation.CheckTime
 	for {
 		MonitorVariation(CheckTime)
+		GetReport()
 		time.Sleep(60 * time.Second)
 	}
 

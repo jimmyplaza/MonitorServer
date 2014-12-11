@@ -40,25 +40,16 @@ func ElkInput(index, table string, obj interface{}){
     outReader := bytes.NewReader(out)
     res, err := myClient.Post(url, "application/x-www-form-urlencoded", outReader)
     if err != nil {
-            fmt.Printf("\n********ELK Get Error:%s\n", err)
+            fmt.Printf("\nELK Get Error:%s\n", err)
+        	res.Body.Close()
             return
     }
     if res.StatusCode == 200  || res.StatusCode == 201 {
        fmt.Printf("\nELK input seccuessful. _Source: %s\n", out) 
     }else {
-       fmt.Printf("\n*********ELK Get Error code: %d,url:%s\n", res.StatusCode, url)
+       fmt.Printf("\nELK Get Error code: %d,url:%s\n", res.StatusCode, url)
     }
-    //err = json.Unmarshal([]byte(res.Body), &obj)
-    contents, err := ioutil.ReadAll(res.Body)
-    if err != nil {
-        fmt.Printf("Read Body Error:%s\n", err)
-        res.Body.Close()
-    }
-    var jobj interface{} 
-    err = json.Unmarshal(contents, &jobj)
-    if err != nil {
-        fmt.Printf("Unmarshall JSON Error:%s => %s\n", url, err)
-    }
+    res.Body.Close()
 }
 
 
