@@ -63,6 +63,10 @@ To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = matis.hsiao@nexusguard.com
 
+[g2server "https://g2tool.nexusguard.com:444"]
+To = jimmy.ko@nexusguard.com
+To = matis.hsiao@nexusguard.com
+
 
 [mail]
 SmtpServer = smtp.gmail.com
@@ -80,6 +84,7 @@ site = https://g2na1.nexusguard.com
 site = https://g2na2.nexusguard.com
 site = https://www.nexusguard.com
 site = https://portal.nexusguard.com
+site = https://g2tool.nexusguard.com:444
 
 ;site = https://g2portal.nexusguard.com
 ;site = https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=AnomalyStatus,Pageviews,Visitors,OnlineUser,Netflow,TopContentLoadingTime,SiteSpeed,dataCenter,dataCenterStatus,cddInfoData,cddWAFTop10IP,cddWAFTop10Category,cddWAFCountryRangeList
@@ -101,10 +106,13 @@ To = andy.shih@nexusguard.com
 CheckTime = 15:59
 IntervalSeconds = 60 
 To = jimmy.ko@nexusguard.com
-To = chris.liu@nexusguard.com
-To = steve.tsai@nexusguard.com
-To = olive.ting@nexusguard.com
-To = matis.hsiao@nexusguard.com
+;To = chris.liu@nexusguard.com
+;To = steve.tsai@nexusguard.com
+;To = olive.ting@nexusguard.com
+;To = matis.hsiao@nexusguard.com
+;To = young.cheng@nexusguard.com
+;To = jean.lin@nexusguard.com
+
 
 
 

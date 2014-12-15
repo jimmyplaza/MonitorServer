@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
 	"io/ioutil"
 	"log"
@@ -199,7 +200,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				jj.Status = 1
 				WriteToJsonFile(jj)
 				if flag_arr[flag_idx] == false && rspCode != 302 {
-					Title := "G2-Component] - " + url + " - Status"
+					Title := "[G2Monitor] - " + "[G2] - " + url + " - Status"
 					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 					//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
 					MorningMail(SmtpServer, Port, From, To, Title, Body)
@@ -222,7 +223,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 					if flag_arr[flag_idx] == false {
 						fmt.Println(rspStatus)
 						//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
-						Title := "G2-Component] - " + url + " - Status"
+						Title := "[G2Monitor] - " + "[G2] - " + url + " - Status"
 						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 						MorningMail(SmtpServer, Port, From, To, Title, Body)
 						WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
@@ -600,7 +601,7 @@ func MonitorDataCenter(seconds int, To []string) {
 										WriteToLogFile("DCenter", errMsg, responseTime, filepath1)
 										//WriteToSyslog(0,"Monitor-DCenter",errMsg)
 										//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
-										Title := "[Data Center Request]: " + url
+										Title := "[G2Monitor] - " + "[Data Center]: " + url
 										Body := Title + "<br>" + errMsg
 										MorningMail(SmtpServer, Port, From, To, Title, Body)
 									} else {
@@ -745,15 +746,15 @@ func CheckCacheRatio() {
 				CacheRatio, _ := jq.Int("cddInfoData", "CacheData", "CachePercent")
 				ratio := strconv.Itoa(CacheRatio)
 				if CacheRatio < CacheRatioBound {
-					Title := "[Check Cache Ratio]" + errMsg[u] + " Cache rate abnormal!"
+					Title := "[G2Monitor] - " + "[Cache Ratio]" + errMsg[u] + " Cache rate abnormal!"
 					Body := errMsg[u] + "<br>Current ratio: " + ratio + "%"
 					MorningMail(SmtpServer, Port, From, To, Title, Body)
 				}
 				a := (float64(Upstream) / float64(TotalRequest)) * 100
 				if a > 80 {
-					title := "[Check Upstream & TotalRequest Ratio]" + errMsg[u] + " - Upstream & Total Request variation more than 80%"
-					body := errMsg[u] + "<br>Upstream/Total Request ratio: " + strconv.FormatFloat(a, 'g', 2, 64) + "%"
-					MorningMail(SmtpServer, Port, From, To, title, body)
+					Title := "[G2Monitor] - " + "[Upstream & TotalRequest Ratio]" + errMsg[u] + " - Upstream & Total Request variation more than 80%"
+					Body := errMsg[u] + "<br>Upstream/Total Request ratio: " + strconv.FormatFloat(a, 'g', 2, 64) + "%"
+					MorningMail(SmtpServer, Port, From, To, Title, Body)
 				}
 			}
 		}
@@ -791,7 +792,7 @@ func DnsCheck() {
 				jj.Site = site
 				if currentip != "" {
 					fmt.Println(currentip)
-					curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
+					curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
 					curtime = strings.Replace(curtime, " ", "T", 1)
 					jj.Timestamp = curtime
 					jj.CustomerName = CustomerName
@@ -813,7 +814,7 @@ func DnsCheck() {
 								}*/
 						} else {
 							jj.Change = 1 //CHANGE
-							Title := "[DNS CHANGE]" + "[" + CustomerName + "] -" + site + " DNS IP change!"
+							Title := "[G2Monitor] - " + "[DNS CHANGE]" + "[" + CustomerName + "] -" + site + " DNS IP change!"
 							Body := "[" + CustomerName + "] -" + site + " from " + dnsSite.List[site] + " change to " + currentip
 							MorningMail(SmtpServer, Port, From, To, Title, Body)
 						}
@@ -857,7 +858,7 @@ func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg str
 			ResponseHeaderTimeout: time.Second * 10,
 		},
 	}
-	Title = "[G2Monitor]" + " - [" + Title + "]"
+	Title = Title + "]"
 	BodyMsg = Title + "<br>" + BodyMsg
 	//BodyMsg = Title + "]" + "<br>STATUS CODE: " + rspStatus + "<br>ERROR: " + BodyMsg
 
@@ -930,7 +931,7 @@ func MonitorVariation(CheckTime string) {
 		ReqRatio := strconv.FormatFloat(a, 'g', 2, 64)
 		LegRatio := strconv.FormatFloat(b, 'g', 2, 64)
 		To4 := cfg.CheckVariation.To
-		Title := "Legitimate variation &  " + "Served by origin variation"
+		Title := "[G2Monitor] - " + "[AAH] - Legitimate & Served by origin variation"
 		Body := "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
 		MorningMail(SmtpServer, Port, From, To4, Title, Body)
 	}
@@ -970,23 +971,23 @@ func GetReport() {
 		SiteSpeed, _ := jq.Int("SiteSpeed", "count")
 
 		if Now == CheckTime {
-			content := "OnlineUser: " + strconv.Itoa(OnlineUser) + "<br>" +
-				"Pageviews: " + strconv.Itoa(Pageviews) + "<br>" +
-				"Visitors: " + strconv.Itoa(Visitors) + "<br>" +
-				"Threats: " + strconv.Itoa(Threats) + "<br>" +
-				"Bandwidth: " + strconv.Itoa(Bandwidth) + "<br>" +
-				"BandwidthPeak: " + strconv.Itoa(BandwidthPeak) + "<br>" +
-				"TotalRequest: " + strconv.Itoa(TotalRequest) + "<br>" +
-				"CacheHit: " + strconv.Itoa(CacheHit) + "<br>" +
-				"Legitimated: " + strconv.Itoa(Legitimated) + "<br>" +
-				"CacheRatio: " + strconv.Itoa(CacheRatio) + "<br>" +
-				"Upstream: " + strconv.Itoa(Upstream) + "<br>" +
-				"SiteSpeed: " + strconv.Itoa(SiteSpeed)
-			Title := "Report"
+			content := "[AAH]Report: " + "OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
+				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
+				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
+				"Threats: " + humanize.Comma(int64(Threats)) + "<br>" +
+				"Bandwidth: " + humanize.Bytes(uint64(Bandwidth)) + "<br>" +
+				"BandwidthPeak: " + humanize.Bytes(uint64(BandwidthPeak)) + "<br>" +
+				"TotalRequest: " + humanize.Comma(int64(TotalRequest)) + "<br>" +
+				"CacheHit: " + humanize.Comma(int64(CacheHit)) + "<br>" +
+				"Legitimated: " + humanize.Comma(int64(Legitimated)) + "<br>" +
+				"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
+				"Serve by origin: " + humanize.Comma(int64(Upstream)) + "<br>" +
+				"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms"
+			Title := "[G2 Report] - " + "[AAH]"
 			Body := content
 			MorningMail(SmtpServer, Port, From, To, Title, Body)
 		}
-		curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
+		curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
 		curtime = strings.Replace(curtime, " ", "T", 1)
 		jj.Timestamp = curtime
 		jj.OnlineUser = OnlineUser
@@ -1003,7 +1004,7 @@ func GetReport() {
 		jj.SiteSpeed = SiteSpeed
 
 		ElkInput("report_idx", "report", jj)
-		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //300 sec
+		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //60 sec
 	} //Forever loop
 }
 
@@ -1014,6 +1015,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Fail to load config file: %s\n", err)
 	}
+
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
