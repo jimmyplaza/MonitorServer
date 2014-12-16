@@ -197,12 +197,22 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 			if err != nil {
 				WriteToLogFile(url, "DIE", responseTime, filepath1)
 				errMsg = fmt.Sprintf("%s", err)
-				jj.Status = 1
-				WriteToJsonFile(jj)
+				if strings.Index(errMsg, "timeout") != -1 {
+					To[0] = "jimmy.ko@nexusguard.com"
+					Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
+					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+					MorningMail(SmtpServer, Port, From, To, Title, Body)
+					continue
+				}
+				jj.Status = 1 //down
 				if flag_arr[flag_idx] == false && rspCode != 302 {
 					Title := "[G2Monitor] - " + "[G2] - " + url + " - Status"
 					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-					//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
+					if strings.Index(errMsg, "connection") != -1 {
+						prd := "0"
+						uat := "1"
+						GMonitorAudio(prd, uat)
+					}
 					MorningMail(SmtpServer, Port, From, To, Title, Body)
 					WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
 					flag_arr[flag_idx] = true
@@ -213,17 +223,18 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				errMsg = "None"
 				//if rspCode == 200 || rspCode < 500  {
 				if rspCode < 500 {
+					if flag_arr[flag_idx] == true { //Revoery Mail, notify service is back
+						Title := "[G2Monitor] - " + "[G2] - " + url + " is back"
+						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+						MorningMail(SmtpServer, Port, From, To, Title, Body)
+					}
 					flag_arr[flag_idx] = false
 					WriteToLogFile(url, "ALIVE", responseTime, filepath1)
 					jj.Status = 100
-					WriteToJsonFile(jj)
 				} else {
 					jj.Status = 1
-					WriteToJsonFile(jj)
 					if flag_arr[flag_idx] == false {
-						fmt.Println(rspStatus)
-						//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
-						Title := "[G2Monitor] - " + "[G2] - " + url + " - Status"
+						Title := "[G2Monitor]x - " + "[G2] - " + url + " - Status"
 						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 						MorningMail(SmtpServer, Port, From, To, Title, Body)
 						WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
@@ -596,7 +607,7 @@ func MonitorDataCenter(seconds int, To []string) {
 											errMsg = " [Error][" + customer.List[i].MoAlias + "]" + " -  " + "[" + customer.List[i].SiteAliasList[s] + "]" + " - " + allsite.List[CId][SId][t].CenterName + " DC" + " - [" + strconv.Itoa(m["DataCenter"][t].CenterCount) + "]" + " is zero!"
 										} else {
 											url = " [" + customer.List[i].MoAlias + "]" + " -  " + "[" + customer.List[i].SiteAliasList[s] + "]" + " - " + allsite.List[CId][SId][t].CenterName + " DC"
-											errMsg = " [Error][" + customer.List[i].MoAlias + "]" + " -  " + "[" + customer.List[i].SiteAliasList[s] + "]" + " - " + allsite.List[CId][SId][t].CenterName + " DC" + " - [" + strconv.Itoa(m["DataCenter"][t].CenterCount) + "]"
+											errMsg = " [Error][" + customer.List[i].MoAlias + "]" + " -  " + "[" + customer.List[i].SiteAliasList[s] + "]" + " - " + allsite.List[CId][SId][t].CenterName + " DC" + " - Request Value: [" + strconv.Itoa(m["DataCenter"][t].CenterCount) + "]"
 										}
 										WriteToLogFile("DCenter", errMsg, responseTime, filepath1)
 										//WriteToSyslog(0,"Monitor-DCenter",errMsg)
@@ -844,6 +855,19 @@ func WriteToSyslog(level int, remote string, msg string) {
 	syslogSender.Write("udp", cfg.System.Syslog, level, "MonitorSys", logMsg)
 }
 
+func GMonitorAudio(prd, uat string) {
+	uurl := "http://107.167.183.111:5487/gmonitor/issue?prd=%s&uat=%s"
+	final_url := fmt.Sprintf(uurl, prd, uat)
+	var myClient = &http.Client{
+		Transport: &http.Transport{
+			Dial: timeoutDialer(time.Duration(10)*time.Second,
+				time.Duration(10)*time.Second),
+			ResponseHeaderTimeout: time.Second * 10,
+		},
+	}
+	_, _ = myClient.Get(final_url)
+}
+
 func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg string) {
 	var To string
 	for _, t := range Too {
@@ -858,7 +882,7 @@ func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg str
 			ResponseHeaderTimeout: time.Second * 10,
 		},
 	}
-	Title = Title + "]"
+	Title = Title
 	BodyMsg = Title + "<br>" + BodyMsg
 	//BodyMsg = Title + "]" + "<br>STATUS CODE: " + rspStatus + "<br>ERROR: " + BodyMsg
 
@@ -971,7 +995,7 @@ func GetReport() {
 		SiteSpeed, _ := jq.Int("SiteSpeed", "count")
 
 		if Now == CheckTime {
-			content := "[AAH]Report: " + "OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
+			content := "[AAH]Report: " + "<br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
 				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
 				"Threats: " + humanize.Comma(int64(Threats)) + "<br>" +
