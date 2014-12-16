@@ -151,6 +151,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 	var flag_idx int
 	var errMsg string
 	var To []string
+	var ToJ []string
 	jj := JsonType{}
 
 	//timeoutDialer (connect timeout, write timeout)
@@ -198,10 +199,10 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				WriteToLogFile(url, "DIE", responseTime, filepath1)
 				errMsg = fmt.Sprintf("%s", err)
 				if strings.Index(errMsg, "timeout") != -1 {
-					To[0] = "jimmy.ko@nexusguard.com"
+					ToJ[0] = "jimmy.ko@nexusguard.com"
 					Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
 					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-					MorningMail(SmtpServer, Port, From, To, Title, Body)
+					MorningMail(SmtpServer, Port, From, ToJ, Title, Body)
 					continue
 				}
 				jj.Status = 1 //down
