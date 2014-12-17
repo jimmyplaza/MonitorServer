@@ -118,8 +118,8 @@ To = jean.lin@nexusguard.com
 
 [checkcacheratio]
 IntervalSeconds = 1200 
-;CacheRatioBound < 43 , alert
-CacheRatioBound = 43 
+;CacheRatioBound < 40 , alert
+CacheRatioBound = 40 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com

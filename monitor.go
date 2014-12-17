@@ -227,6 +227,9 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 					if flag_arr[flag_idx] == true { //Revoery Mail, notify service is back
 						Title := "[G2Monitor] - " + "[G2] - " + url + " is back"
 						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+						prd := "0"
+						uat := "0"
+						GMonitorAudio(prd, uat)
 						MorningMail(SmtpServer, Port, From, To, Title, Body)
 					}
 					flag_arr[flag_idx] = false
