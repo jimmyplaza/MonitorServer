@@ -5,6 +5,7 @@ To = jimmy.ko@nexusguard.com
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
+To = eric.kuo@nexusguard.com 
 
 [g2server "https://g2portal.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -17,6 +18,7 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = matis.hsiao@nexusguard.com
+To = eric.kuo@nexusguard.com 
 
 [g2server "https://g2api.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com

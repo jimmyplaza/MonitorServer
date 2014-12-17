@@ -208,7 +208,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				jj.Status = 1 //down
 				if flag_arr[flag_idx] == false && rspCode != 302 {
 					Title := "[G2Monitor] - " + "[G2] - " + url + " - Status"
-					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+					Body := "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 					if strings.Index(errMsg, "connection") != -1 {
 						prd := "0"
 						uat := "1"
@@ -226,7 +226,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				if rspCode < 500 {
 					if flag_arr[flag_idx] == true { //Revoery Mail, notify service is back
 						Title := "[G2Monitor] - " + "[G2] - " + url + " is back"
-						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+						Body := "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 						prd := "0"
 						uat := "0"
 						GMonitorAudio(prd, uat)
