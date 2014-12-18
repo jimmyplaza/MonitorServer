@@ -993,30 +993,31 @@ func GetReport() {
 	jj := JsonReportType{}
 
 	// Every 2 min
-	length := "10"
-	tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&length=%s&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
-	url0 := fmt.Sprintf(tmp_url, length)
-	fmt.Println(url0)
-	content_str, err := HttpsGet(url0, "GetReport")
-	if err != nil {
-		fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
-		return //tmppppppppppppp
-	}
-	data := map[string]interface{}{}
-	dec := json.NewDecoder(strings.NewReader(content_str))
-	dec.Decode(&data)
-	jq := jsonq.NewQuery(data)
-	liveThreatsChart, err := jq.ArrayOfArrays("liveThreatsChart", "Threats")
-	//liveThreatsChart, err := jq.Object("liveThreatsChart", "Threats")
-	if err != nil {
-		fmt.Println("jq Error: %s", err)
-	}
+	/*
+		length := "10"
+		tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&length=%s&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
+		url0 := fmt.Sprintf(tmp_url, length)
+		fmt.Println(url0)
+		content_str, err := HttpsGet(url0, "GetReport")
+		if err != nil {
+			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
+			return //tmppppppppppppp
+		}
+		data := map[string]interface{}{}
+		dec := json.NewDecoder(strings.NewReader(content_str))
+		dec.Decode(&data)
+		jq := jsonq.NewQuery(data)
+		liveThreatsChart, err := jq.ArrayOfArrays("liveThreatsChart", "Threats")
+		//liveThreatsChart, err := jq.Object("liveThreatsChart", "Threats")
+		if err != nil {
+			fmt.Println("jq Error: %s", err)
+		}
 
-	fmt.Println("liveThreatsChart: ", liveThreatsChart)
-	fmt.Println(liveThreatsChart[:][:][1])
-	MinArray(liveThreatsChart)
-	os.Exit(0)
-
+		fmt.Println("liveThreatsChart: ", liveThreatsChart)
+		fmt.Println(liveThreatsChart[:][:][1])
+		MinArray(liveThreatsChart)
+		os.Exit(0)
+	*/
 	//NetflowBandwidth
 
 	//AAH only, real time summary
