@@ -152,7 +152,8 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 	var flag_idx int
 	var errMsg string
 	var To []string
-	var ToJ []string
+	//var ToJ [1]string
+	ToJ := make([]string, 1, 1)
 	jj := JsonType{}
 
 	//timeoutDialer (connect timeout, write timeout)
@@ -200,6 +201,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				WriteToLogFile(url, "DIE", responseTime, filepath1)
 				errMsg = fmt.Sprintf("%s", err)
 				if strings.Index(errMsg, "timeout") != -1 {
+					fmt.Println("Only Jjimmy, timeout")
 					ToJ[0] = "jimmy.ko@nexusguard.com"
 					Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
 					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
@@ -976,10 +978,11 @@ func MonitorVariation(CheckTime string) {
 //func MinArray(obj [][]interface{}) {
 func MinArray(obj [][]interface{}) {
 	//sort.Ints(obj[:][:][1])
-	/*legnth := len(obj)
+	legnth := len(obj)
 	fmt.Println(legnth)
-	i := obj.(int)
-	*/
+	//fmt.Println(obj.([]interface{}))
+	//msg := obj.(map[][]interface{})
+
 }
 
 func GetReport() {
@@ -1010,9 +1013,9 @@ func GetReport() {
 	}
 
 	fmt.Println("liveThreatsChart: ", liveThreatsChart)
-	//fmt.Println(liveThreatsChart[:][:][1])
-	//MinArray(liveThreatsChart)
-	//os.Exit(0)
+	fmt.Println(liveThreatsChart[:][:][1])
+	MinArray(liveThreatsChart)
+	os.Exit(0)
 
 	//NetflowBandwidth
 
