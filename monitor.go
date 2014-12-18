@@ -16,6 +16,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	//"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -207,7 +208,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				}
 				jj.Status = 1 //down
 				if flag_arr[flag_idx] == false && rspCode != 302 {
-					Title := "[G2Monitor] - " + "[G2] - " + url + " - Status"
+					Title := "[G2Monitor][G2][Problem] - " + url
 					Body := "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 					if strings.Index(errMsg, "connection") != -1 {
 						prd := "0"
@@ -225,7 +226,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				//if rspCode == 200 || rspCode < 500  {
 				if rspCode < 500 {
 					if flag_arr[flag_idx] == true { //Revoery Mail, notify service is back
-						Title := "[G2Monitor] - " + "[G2] - " + url + " is back"
+						Title := "[G2Monitor][G2] [Recovery] - " + url
 						Body := "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 						prd := "0"
 						uat := "0"
@@ -238,7 +239,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				} else {
 					jj.Status = 1
 					if flag_arr[flag_idx] == false {
-						Title := "[G2Monitor]x - " + "[G2] - " + url + " - Status"
+						Title := "[G2Monitor]x [G2][Problem] - " + url
 						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 						MorningMail(SmtpServer, Port, From, To, Title, Body)
 						WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
@@ -359,24 +360,31 @@ func MonitorCustomerServer(Url []string, seconds int, To []string) {
 
 func WriteToLogFile(remote string, msg, responseTime, filepath string) {
 	logMsg := "[" + remote + "] , " + msg + " , " + responseTime + " , "
-	log.Println(logMsg)
+	//log.Println(logMsg)
 	t := time.Now()
-	var trimStr string
-	if strings.Index(remote, "http") != -1 {
-		trimStr = "http://"
-	}
-	if strings.Index(remote, "https") != -1 {
-		trimStr = "https://"
-	}
-	trm := strings.Trim(remote, trimStr)
-	trimIndex := strings.Index(trm, "?")
-	if trimIndex != -1 {
-		trm = trm[:trimIndex]
-	}
+	//var trimStr string
 
-	fileName := t.Format("20060102") + "_" + strings.Replace(trm, "/", ".", -1) + ".log"
-	fmt.Println(fileName)
-	fmt.Println(logMsg, fileName)
+	remote = strings.Replace(remote, "https://", "", -1)
+	remote = strings.Replace(remote, "http://", "", -1)
+	remote = strings.Replace(remote, "?", "", -1)
+
+	/*
+		if strings.Index(remote, "http") != -1 {
+			trimStr = "http://"
+		}
+		if strings.Index(remote, "https") != -1 {
+			trimStr = "https://"
+		}
+		trm := strings.Trim(remote, trimStr)
+		trimIndex := strings.Index(trm, "?")
+		if trimIndex != -1 {
+			trm = trm[:trimIndex]
+		}
+	*/
+	//fileName := t.Format("20060102") + "_" + strings.Replace(trm, "/", ".", -1) + ".log"
+	fileName := t.Format("20060102") + "_" + strings.Replace(remote, "/", ".", -1) + ".log"
+	fmt.Println(fileName)         //20141217_ortal.nexusguard.com.log
+	fmt.Println(logMsg, fileName) // [https://portal.nexusguard.com] , DIE , 15.062934514s ,  20141217_ortal.nexusguard.com.log
 	f, err := os.OpenFile(filepath+fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
 	//defer f.Close()
 	if err != nil {
@@ -965,6 +973,15 @@ func MonitorVariation(CheckTime string) {
 	}
 }
 
+//func MinArray(obj [][]interface{}) {
+func MinArray(obj [][]interface{}) {
+	//sort.Ints(obj[:][:][1])
+	/*legnth := len(obj)
+	fmt.Println(legnth)
+	i := obj.(int)
+	*/
+}
+
 func GetReport() {
 	funcname := "GetReport"
 	CheckTime := cfg.GetReport.CheckTime
@@ -972,10 +989,37 @@ func GetReport() {
 	IntervalSeconds := cfg.GetReport.IntervalSeconds
 	jj := JsonReportType{}
 
-	//AAH only
+	// Every 2 min
+	length := "10"
+	tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&length=%s&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
+	url0 := fmt.Sprintf(tmp_url, length)
+	fmt.Println(url0)
+	content_str, err := HttpsGet(url0, "GetReport")
+	if err != nil {
+		fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
+		return //tmppppppppppppp
+	}
+	data := map[string]interface{}{}
+	dec := json.NewDecoder(strings.NewReader(content_str))
+	dec.Decode(&data)
+	jq := jsonq.NewQuery(data)
+	liveThreatsChart, err := jq.ArrayOfArrays("liveThreatsChart", "Threats")
+	//liveThreatsChart, err := jq.Object("liveThreatsChart", "Threats")
+	if err != nil {
+		fmt.Println("jq Error: %s", err)
+	}
+
+	fmt.Println("liveThreatsChart: ", liveThreatsChart)
+	//fmt.Println(liveThreatsChart[:][:][1])
+	//MinArray(liveThreatsChart)
+	//os.Exit(0)
+
+	//NetflowBandwidth
+
+	//AAH only, real time summary
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
-		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+		Now := fmt.Sprintf("%s", time.Now().Format("15:04:05"))
 		content_str, err := HttpsGet(url, "GetReport")
 		if err != nil {
 			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
@@ -998,7 +1042,7 @@ func GetReport() {
 		Upstream, _ := jq.Int("cddInfoData", "Upstream", "Upstream")
 		SiteSpeed, _ := jq.Int("SiteSpeed", "count")
 
-		if Now == CheckTime {
+		if Now == CheckTime { //15:59:00
 			content := "[AAH]Report: " + "<br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
 				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
@@ -1043,6 +1087,10 @@ func main() {
 	if err != nil {
 		log.Fatalf("Fail to load config file: %s\n", err)
 	}
+	CheckDir()
+
+	//GetReport()
+	//os.Exit(0)
 
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
@@ -1052,19 +1100,21 @@ func main() {
 	Port = cfg.Mail.Port
 	From = cfg.Mail.From
 	To1 := cfg.Monitorg2.To
-
-	go CheckCacheRatio()
-
-	go DnsCheck()
-
-	// ===================== Customer Site ===================
-	IntervalSeconds2 := cfg.MonitorCustomerSite.IntervalSeconds
-	go MonitorCustomerServer(allCustomerSite, IntervalSeconds2, To1)
-
 	// ===================== G2 component Site ===================
 	Url := cfg.Monitorg2.Site
 	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
 	go MonitorG2Server(Url, IntervalSeconds, To1)
+	for {
+		time.Sleep(60 * time.Second)
+	}
+	os.Exit(0)
+
+	go CheckCacheRatio()
+
+	go DnsCheck()
+	// ===================== Customer Site ===================
+	IntervalSeconds2 := cfg.MonitorCustomerSite.IntervalSeconds
+	go MonitorCustomerServer(allCustomerSite, IntervalSeconds2, To1)
 
 	//===================== Portal Customer Bandwidth ===================
 	go MonitorBandwidth()

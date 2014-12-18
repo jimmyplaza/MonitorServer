@@ -23,6 +23,26 @@ type Config struct {
 }
 
 
+
+func CheckDir() {
+        _, err := os.Stat("./log")
+        if err != nil {
+                fmt.Println("Directory log not exist, create log dir")
+                err := os.Mkdir("./log", 0777)
+                if err != nil {
+                        os.Exit(1)
+                }
+        }
+        _, err = os.Stat("./csmlog")
+        if err != nil {
+                fmt.Println("Directory csmlog not exist, create log dir")
+                err := os.Mkdir("./csmlog", 0777)
+                if err != nil {
+                        os.Exit(1)
+                }
+        }
+}
+
 func GetToken() string {
         t1 := &Token{User: "APIServer", Action: "API", Value: "Token", DF: "G-Center"}
         t1.Make()
