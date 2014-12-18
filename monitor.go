@@ -1104,10 +1104,6 @@ func main() {
 	Url := cfg.Monitorg2.Site
 	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
 	go MonitorG2Server(Url, IntervalSeconds, To1)
-	for {
-		time.Sleep(60 * time.Second)
-	}
-	os.Exit(0)
 
 	go CheckCacheRatio()
 
