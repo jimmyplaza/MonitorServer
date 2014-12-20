@@ -16,7 +16,7 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	//"sort"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -975,14 +975,20 @@ func MonitorVariation(CheckTime string) {
 	}
 }
 
-//func MinArray(obj [][]interface{}) {
-func MinArray(obj [][]interface{}) {
-	//sort.Ints(obj[:][:][1])
-	legnth := len(obj)
-	fmt.Println(legnth)
-	//fmt.Println(obj.([]interface{}))
-	//msg := obj.(map[][]interface{})
-
+func GetStatistic(obj [][]interface{}) (min, max, avg float64) {
+	intArray := []float64{}
+	var sum float64
+	for _, val := range obj {
+		v := val[1].(float64)
+		sum = sum + v
+		intArray = append(intArray, v)
+	}
+	arr_len := len(intArray)
+	avg = sum / float64(arr_len)
+	sort.Float64s(intArray)
+	min = intArray[0]
+	max = intArray[arr_len-1]
+	return min, max, avg
 }
 
 func GetReport() {
@@ -993,37 +999,86 @@ func GetReport() {
 	jj := JsonReportType{}
 
 	// Every 2 min
+	length := "720"
+	tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&length=%s&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
+	url0 := fmt.Sprintf(tmp_url, length)
+
+	content_str, err := HttpsGet(url0, "GetReport")
+	if err != nil {
+		fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
+		return //tmppppp
+	}
+	data := map[string]interface{}{}
+	dec := json.NewDecoder(strings.NewReader(content_str))
+	dec.Decode(&data)
+	jq := jsonq.NewQuery(data)
+	liveThreatsChart, err := jq.ArrayOfArrays("liveThreatsChart", "Threats")
+	NetflowBandwidth, err := jq.ArrayOfArrays("NetflowBandwidth")
+	NetflowBandwidth = NetflowBandwidth[:len(NetflowBandwidth)-2]
+	liveReqsChart, err := jq.ArrayOfArrays("liveReqsChart", "Reqs")
+	CacheHit, err := jq.ArrayOfArrays("liveCacheChart", "CacheHit")
+	Legitimated, err := jq.ArrayOfArrays("liveLegitimatedChart", "Legitimated")
+	Upstream, err := jq.ArrayOfArrays("liveUpstreamChart", "Upstream")
+	if err != nil {
+		fmt.Println("jsonq Error: %s", err)
+	}
+
+	threats_min, threats_max, threats_avg := GetStatistic(liveThreatsChart)
+	NetflowBandwidth_min, NetflowBandwidth_max, NetflowBandwidth_avg := GetStatistic(NetflowBandwidth)
+	liveReqsChart_min, liveReqsChart_max, liveReqsChart_avg := GetStatistic(liveReqsChart)
+	CacheHit_min, CacheHit_max, CacheHit_avg := GetStatistic(CacheHit)
+	Legitimated_min, Legitimated_max, Legitimated_avg := GetStatistic(Legitimated)
+	Upstream_min, Upstream_max, Upstream_avg := GetStatistic(Upstream)
+
 	/*
-		length := "10"
-		tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&length=%s&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
-		url0 := fmt.Sprintf(tmp_url, length)
-		fmt.Println(url0)
-		content_str, err := HttpsGet(url0, "GetReport")
-		if err != nil {
-			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
-			return //tmppppppppppppp
-		}
-		data := map[string]interface{}{}
-		dec := json.NewDecoder(strings.NewReader(content_str))
-		dec.Decode(&data)
-		jq := jsonq.NewQuery(data)
-		liveThreatsChart, err := jq.ArrayOfArrays("liveThreatsChart", "Threats")
-		//liveThreatsChart, err := jq.Object("liveThreatsChart", "Threats")
-		if err != nil {
-			fmt.Println("jq Error: %s", err)
-		}
+		fmt.Println("threats_min: ", threats_min)
+		fmt.Println("threats_max: ", threats_max)
+		fmt.Println("threats_avg: ", threats_avg)
 
-		fmt.Println("liveThreatsChart: ", liveThreatsChart)
-		fmt.Println(liveThreatsChart[:][:][1])
-		MinArray(liveThreatsChart)
-		os.Exit(0)
+		fmt.Println("NetflowBandwidth_min: ", NetflowBandwidth_min)
+		fmt.Println("NetflowBandwidth_max: ", NetflowBandwidth_max)
+		fmt.Println("NetflowBandwidth_avg: ", NetflowBandwidth_avg)
+
+		fmt.Println("liveReqsChart_min: ", liveReqsChart_min)
+		fmt.Println("liveReqsChart_max: ", liveReqsChart_max)
+		fmt.Println("liveReqsChart_avg: ", liveReqsChart_avg)
+
+		fmt.Println("CacheHit_min: ", CacheHit_min)
+		fmt.Println("CacheHit_max: ", CacheHit_max)
+		fmt.Println("CacheHit_avg: ", CacheHit_avg)
+
+		fmt.Println("Legitimated_min: ", Legitimated_min)
+		fmt.Println("Legitimated_max: ", Legitimated_max)
+		fmt.Println("Legitimated_avg: ", Legitimated_avg)
+
+		fmt.Println("Upstream_min: ", Upstream_min)
+		fmt.Println("Upstream_max: ", Upstream_max)
+		fmt.Println("Upstream_avg: ", Upstream_avg)
 	*/
-	//NetflowBandwidth
+	liveStatistic := "<br><br>LIVE REPORT: " +
+		"<br>Threats min: " + humanize.Comma(int64(threats_min)) +
+		"<br>Threats max: " + humanize.Comma(int64(threats_max)) +
+		"<br>Threats avg: " + humanize.Comma(int64(threats_avg)) +
+		"<br>Bandwidth_min: " + humanize.Comma(int64(NetflowBandwidth_min)) +
+		"<br>Bandwidth_max: " + humanize.Comma(int64(NetflowBandwidth_max)) +
+		"<br>Bandwidth_avg: " + humanize.Comma(int64(NetflowBandwidth_avg)) +
+		"<br>Live Request min: " + humanize.Comma(int64(liveReqsChart_min)) +
+		"<br>Live Request max: " + humanize.Comma(int64(liveReqsChart_max)) +
+		"<br>Live Request avg: " + humanize.Comma(int64(liveReqsChart_avg)) +
+		"<br>CachHit_min: " + humanize.Comma(int64(CacheHit_min)) +
+		"<br>CachHit_max: " + humanize.Comma(int64(CacheHit_max)) +
+		"<br>CachHit_avg: " + humanize.Comma(int64(CacheHit_avg)) +
+		"<br>Legitimated_min: " + humanize.Comma(int64(Legitimated_min)) +
+		"<br>Legitimated_max: " + humanize.Comma(int64(Legitimated_max)) +
+		"<br>Legitimated_avg: " + humanize.Comma(int64(Legitimated_avg)) +
+		"<br>Serve by origin min: " + humanize.Comma(int64(Upstream_min)) +
+		"<br>Serve by origin max: " + humanize.Comma(int64(Upstream_max)) +
+		"<br>Serve by origin avg: " + humanize.Comma(int64(Upstream_avg))
 
-	//AAH only, real time summary
+	//AAH only, time total sum report
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
-		Now := fmt.Sprintf("%s", time.Now().Format("15:04:05"))
+		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
 		content_str, err := HttpsGet(url, "GetReport")
 		if err != nil {
 			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
@@ -1046,8 +1101,8 @@ func GetReport() {
 		Upstream, _ := jq.Int("cddInfoData", "Upstream", "Upstream")
 		SiteSpeed, _ := jq.Int("SiteSpeed", "count")
 
-		if Now == CheckTime { //15:59:00
-			content := "[AAH]Report: " + "<br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
+		if Now == CheckTime { //15:59
+			content := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
 				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
 				"Threats: " + humanize.Comma(int64(Threats)) + "<br>" +
@@ -1058,7 +1113,7 @@ func GetReport() {
 				"Legitimated: " + humanize.Comma(int64(Legitimated)) + "<br>" +
 				"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
 				"Serve by origin: " + humanize.Comma(int64(Upstream)) + "<br>" +
-				"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms"
+				"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
 			Title := "[G2 Report] - " + "[AAH]"
 			Body := content
 			MorningMail(SmtpServer, Port, From, To, Title, Body)
@@ -1094,8 +1149,12 @@ func main() {
 	CheckDir()
 
 	//GetReport()
-	//os.Exit(0)
+	/*for {
+		time.Sleep(60 * time.Second)
+	}
 
+	os.Exit(0)
+	*/
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
