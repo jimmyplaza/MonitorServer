@@ -1,17 +1,9 @@
-[g2server "http://10.7.9.60:9000"]
-To = jimmy.ko@nexusguard.com
 
 [g2server "https://g2.nexusguard.com"]
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = eric.kuo@nexusguard.com 
-
-[g2server "https://g2portal.nexusguard.com"] 
-To = jimmy.ko@nexusguard.com
-To = chris.liu@nexusguard.com
-To = steve.tsai@nexusguard.com
-To = matis.hsiao@nexusguard.com
 
 [g2server "http://g2demo.nxg.me"] 
 To = jimmy.ko@nexusguard.com
@@ -25,7 +17,7 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = andy.shih@nexusguard.com
-;To = kevin.chiu@nexusguard.com
+To = kevin.chiu@nexusguard.com
 
 [g2server "https://g2api2.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -44,7 +36,7 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = andy.shih@nexusguard.com
-;To = kevin.chiu@nexusguard.com
+To = kevin.chiu@nexusguard.com
 
 [g2server "https://g2na2.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -68,7 +60,6 @@ To = matis.hsiao@nexusguard.com
 [g2server "https://g2tool.nexusguard.com:444"]
 To = jimmy.ko@nexusguard.com
 To = matis.hsiao@nexusguard.com
-
 
 [mail]
 SmtpServer = smtp.gmail.com
@@ -105,16 +96,15 @@ To = matis.hsiao@nexusguard.com
 To = andy.shih@nexusguard.com
 
 [getreport]
-;CheckTime = 15:59
-CheckTime = 08:20
+CheckTime = 15:59
 IntervalSeconds = 60 
 To = jimmy.ko@nexusguard.com
-;To = chris.liu@nexusguard.com
-;To = steve.tsai@nexusguard.com
-;To = olive.ting@nexusguard.com
-;To = matis.hsiao@nexusguard.com
-;To = young.cheng@nexusguard.com
-;To = jean.lin@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = olive.ting@nexusguard.com
+To = matis.hsiao@nexusguard.com
+To = young.cheng@nexusguard.com
+To = jean.lin@nexusguard.com
 
 
 
