@@ -11,52 +11,18 @@ import (
 	"github.com/jmoiron/jsonq"
 	"io/ioutil"
 	"log"
-	"net"
 	"net/http"
-	"net/url"
-	"os"
 	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
+	//"net/url"
+	//"os"
+	//"net"
 	//"bytes"
 )
-
-type JsonType struct {
-	Status       int    `json:"status"`
-	ResponseTime int64  `json:"responsetime"`
-	Timestamp    string `json:"@timestamp"`
-	Url          string `json:"url"`
-	Errmsg       string `json:"errmsg"`
-	Rspstatus    string `json:rspstatus`
-}
-
-type JsonDnsType struct {
-	CustomerName string `json:"customername"`
-	Site         string `json:"site"`
-	Status       int    `json:"status"`
-	Timestamp    string `json:"@timestamp"`
-	CurrentIP    string `json:"currentip"`
-	Change       int    `json:"change"`
-}
-
-type JsonReportType struct {
-	Timestamp     string `json:"@timestamp"`
-	OnlineUser    int    `json:"onlineuser"`
-	Pageviews     int    `json:"pageviews"`
-	Visitors      int    `json:"visitors"`
-	Threats       int    `json:"threats"`
-	Bandwidth     int    `json:"bandwidth"`
-	BandwidthPeak int    `json:"bandwithpeak"`
-	TotalRequest  int    `json:"totalrequest"`
-	CacheHit      int    `json:"cachehit"`
-	Legitimated   int    `json:"legitimated"`
-	CacheRatio    int    `json:"cacheratio"`
-	Upstream      int    `json:"upstream"`
-	SiteSpeed     int    `json:"sitespeed"`
-}
 
 var debug *bool
 var syslogSender *SyslogSender
@@ -73,42 +39,6 @@ var dnsSite DnsSite
 var SmtpServer string
 var Port string
 var From string
-
-func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
-	return func(netw, addr string) (net.Conn, error) {
-		conn, err := net.DialTimeout(netw, addr, cTimeout)
-		if err != nil {
-			return nil, err
-		}
-		conn.SetDeadline(time.Now().Add(rwTimeout))
-		return conn, nil
-	}
-}
-
-func HttpsGet(url string, funcName string) (rspstring string, err error) {
-	var myClient = &http.Client{
-		Transport: &http.Transport{
-			Dial: timeoutDialer(time.Duration(10)*time.Second,
-				time.Duration(10)*time.Second),
-			ResponseHeaderTimeout: time.Second * 10,
-			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //for https
-		},
-	}
-	response, err := myClient.Get(url)
-	if err != nil {
-		fmt.Printf("[%s] http.Get => %v", funcName, err.Error())
-		return "", err
-	}
-	defer response.Body.Close()
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		fmt.Printf("[%s] readall err: %s", funcName, err)
-		return "", err
-	}
-	rspstring = string(contents)
-	return rspstring, nil
-
-}
 
 func CheckVariation() (ReqRatio, LegRatio float64) {
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&kind=60&length=24&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=cddInfoData"
@@ -358,69 +288,6 @@ func MonitorCustomerServer(Url []string, seconds int, To []string) {
 		time.Sleep(time.Duration(seconds) * time.Second)
 		cnt++
 	}
-}
-
-func WriteToLogFile(remote string, msg, responseTime, filepath string) {
-	logMsg := "[" + remote + "] , " + msg + " , " + responseTime + " , "
-	//log.Println(logMsg)
-	t := time.Now()
-	//var trimStr string
-
-	remote = strings.Replace(remote, "https://", "", -1)
-	remote = strings.Replace(remote, "http://", "", -1)
-	remote = strings.Replace(remote, "?", "", -1)
-
-	/*
-		if strings.Index(remote, "http") != -1 {
-			trimStr = "http://"
-		}
-		if strings.Index(remote, "https") != -1 {
-			trimStr = "https://"
-		}
-		trm := strings.Trim(remote, trimStr)
-		trimIndex := strings.Index(trm, "?")
-		if trimIndex != -1 {
-			trm = trm[:trimIndex]
-		}
-	*/
-	//fileName := t.Format("20060102") + "_" + strings.Replace(trm, "/", ".", -1) + ".log"
-	fileName := t.Format("20060102") + "_" + strings.Replace(remote, "/", ".", -1) + ".log"
-	fmt.Println(fileName)         //20141217_ortal.nexusguard.com.log
-	fmt.Println(logMsg, fileName) // [https://portal.nexusguard.com] , DIE , 15.062934514s ,  20141217_ortal.nexusguard.com.log
-	f, err := os.OpenFile(filepath+fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
-	//defer f.Close()
-	if err != nil {
-		fmt.Printf("[WriteToLogFile] error opening file: %v", err)
-		f.Close()
-		//log.Printf("[WriteToLogFile] error opening file: %v", err)
-	}
-	log.SetOutput(f)
-	log.Println(logMsg)
-	f.Close()
-}
-
-func WriteToJsonFile(jj JsonType) {
-	out, _ := json.Marshal(jj)
-	logMsg := string(out)
-	t := time.Now()
-	fileName := "allSite.json"
-	fmt.Println(logMsg, fileName)
-	f, err := os.OpenFile("./resources/assets/"+t.Format("20060102")+"_"+fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
-	//defer f.Close()
-	//f, err := os.OpenFile("./resources/assets/" + fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
-
-	if err != nil {
-		fmt.Printf("error opening file: %v", err)
-		f.Close()
-	}
-
-	_, err = f.WriteString(logMsg + ", ")
-	if err != nil {
-		fmt.Printf("error write file: %v", err)
-		f.Close()
-	}
-	f.Close()
-
 }
 
 //func MonitorBandwidth(seconds int, SmtpServer string, Port uint, From string, To []string){
@@ -698,16 +565,6 @@ func exe_cmd(cmd string, wg *sync.WaitGroup) (output string) {
 	return output
 }
 
-/*
-visitedURL := map[string]bool {
-    "http://www.google.com": true,
-    "https://paypal.com": true,
-}
-if visitedURL[thisSite] {
-    fmt.Println("Already been here.")
-}
-*/
-
 func CheckCacheRatio() {
 
 	var myClient = &http.Client{
@@ -860,15 +717,6 @@ func DnsCheck() {
 	}
 }
 
-func WriteToSyslog(level int, remote string, msg string) {
-	logMsg := "[" + remote + "]:" + msg
-	fmt.Println("logMsg: ", logMsg)
-	if *debug {
-		fmt.Println(logMsg)
-	}
-	syslogSender.Write("udp", cfg.System.Syslog, level, "MonitorSys", logMsg)
-}
-
 func GMonitorAudio(prd, uat string) {
 	uurl := "http://107.167.183.111:5487/gmonitor/issue?prd=%s&uat=%s"
 	final_url := fmt.Sprintf(uurl, prd, uat)
@@ -880,66 +728,6 @@ func GMonitorAudio(prd, uat string) {
 		},
 	}
 	_, _ = myClient.Get(final_url)
-}
-
-func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg string) {
-	var To string
-	for _, t := range Too {
-		To = To + t + " , "
-	}
-	To = To[:len(To)-3]
-	uurl := "http://g2tool.cloudapp.net:445/morningbird"
-	var myClient = &http.Client{
-		Transport: &http.Transport{
-			Dial: timeoutDialer(time.Duration(10)*time.Second,
-				time.Duration(10)*time.Second),
-			ResponseHeaderTimeout: time.Second * 10,
-		},
-	}
-	Title = Title
-	BodyMsg = Title + "<br>" + BodyMsg
-	//BodyMsg = Title + "]" + "<br>STATUS CODE: " + rspStatus + "<br>ERROR: " + BodyMsg
-
-	v := url.Values{}
-	v.Set("to", To)
-	v.Set("from", "g2.service@nexusguard.com")
-	v.Set("subject", Title)
-	v.Set("content", BodyMsg)
-	v.Set("publickey", "cba2eb")
-	v.Set("privatekey", "c3e12e")
-
-	//out, _ := json.Marshal(m)
-	//outReader := bytes.NewReader([]byte(out))
-	//res, err := myClient.Post(uurl, "application/x-www-form-urlencoded", outReader)
-	//res, err := myClient.Post(url, "application/json", outReader)
-	//res, err := myClient.PostForm(uurl, url.Values{ "from" : { "g2.service@nexusguard.com" }, "to" : { "jimmy.ko@nexusguard.com, stickbob@gmail.com"  }, "subject" : {"aaaa"}, "content":{"ttttt"}, "publickey":{"cba2eb"}, "privatekey":{"c3e12e"}  })
-	res, err := myClient.PostForm(uurl, v)
-	if err != nil {
-		fmt.Printf("MorningBird Mail Error:%s\n", err)
-		return
-	}
-	if res.StatusCode != 200 {
-		fmt.Printf("MorningBird Mail Error code: %d,url:%s\n", res.StatusCode, uurl)
-	}
-	//err = json.Unmarshal([]byte(res.Body), &obj)
-	contents, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		fmt.Printf("Read Body Error:%s\n", err)
-		//errMsg := fmt.Sprintf("%s",err)
-		//WriteToSyslog(3,"Monitor-MorningMail",errMsg)
-		res.Body.Close()
-	}
-	var obj interface{}
-	err = json.Unmarshal(contents, &obj)
-	if *debug {
-		fmt.Println(obj)
-	}
-	if err != nil {
-		//errMsg := fmt.Sprintf("%s",err)
-		fmt.Printf("MorningMail JSON Error:%s => %s\n", uurl, err)
-		//WriteToSyslog(3,"Monitor-MorningMail",errMsg)
-	}
-	res.Body.Close()
 }
 
 /*

@@ -8,6 +8,42 @@ import (
 
 
 
+type JsonType struct {
+	Status       int    `json:"status"`
+	ResponseTime int64  `json:"responsetime"`
+	Timestamp    string `json:"@timestamp"`
+	Url          string `json:"url"`
+	Errmsg       string `json:"errmsg"`
+	Rspstatus    string `json:rspstatus`
+}
+
+type JsonDnsType struct {
+	CustomerName string `json:"customername"`
+	Site         string `json:"site"`
+	Status       int    `json:"status"`
+	Timestamp    string `json:"@timestamp"`
+	CurrentIP    string `json:"currentip"`
+	Change       int    `json:"change"`
+}
+
+type JsonReportType struct {
+	Timestamp     string `json:"@timestamp"`
+	OnlineUser    int    `json:"onlineuser"`
+	Pageviews     int    `json:"pageviews"`
+	Visitors      int    `json:"visitors"`
+	Threats       int    `json:"threats"`
+	Bandwidth     int    `json:"bandwidth"`
+	BandwidthPeak int    `json:"bandwithpeak"`
+	TotalRequest  int    `json:"totalrequest"`
+	CacheHit      int    `json:"cachehit"`
+	Legitimated   int    `json:"legitimated"`
+	CacheRatio    int    `json:"cacheratio"`
+	Upstream      int    `json:"upstream"`
+	SiteSpeed     int    `json:"sitespeed"`
+}
+
+
+
 type DCObject struct {
 	CenterName string
 	CenterCount int

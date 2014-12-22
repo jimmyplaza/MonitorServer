@@ -9,6 +9,11 @@ import (
 	"code.google.com/p/gcfg"
 	"log"
 	"time"
+	"net"
+	"net/http"
+	"io/ioutil"
+	"crypto/tls"
+	"encoding/json"
 )
 
 type Config struct {
@@ -22,6 +27,119 @@ type Config struct {
     }
 }
 
+
+
+func WriteToLogFile(remote string, msg, responseTime, filepath string) {
+	logMsg := "[" + remote + "] , " + msg + " , " + responseTime + " , "
+	//log.Println(logMsg)
+	t := time.Now()
+	//var trimStr string
+
+	remote = strings.Replace(remote, "https://", "", -1)
+	remote = strings.Replace(remote, "http://", "", -1)
+	remote = strings.Replace(remote, "?", "", -1)
+
+	/*
+		if strings.Index(remote, "http") != -1 {
+			trimStr = "http://"
+		}
+		if strings.Index(remote, "https") != -1 {
+			trimStr = "https://"
+		}
+		trm := strings.Trim(remote, trimStr)
+		trimIndex := strings.Index(trm, "?")
+		if trimIndex != -1 {
+			trm = trm[:trimIndex]
+		}
+	*/
+	//fileName := t.Format("20060102") + "_" + strings.Replace(trm, "/", ".", -1) + ".log"
+	fileName := t.Format("20060102") + "_" + strings.Replace(remote, "/", ".", -1) + ".log"
+	fmt.Println(fileName)         //20141217_ortal.nexusguard.com.log
+	fmt.Println(logMsg, fileName) // [https://portal.nexusguard.com] , DIE , 15.062934514s ,  20141217_ortal.nexusguard.com.log
+	f, err := os.OpenFile(filepath+fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
+	//defer f.Close()
+	if err != nil {
+		fmt.Printf("[WriteToLogFile] error opening file: %v", err)
+		f.Close()
+		//log.Printf("[WriteToLogFile] error opening file: %v", err)
+	}
+	log.SetOutput(f)
+	log.Println(logMsg)
+	f.Close()
+}
+
+func WriteToJsonFile(jj JsonType) {
+	out, _ := json.Marshal(jj)
+	logMsg := string(out)
+	t := time.Now()
+	fileName := "allSite.json"
+	fmt.Println(logMsg, fileName)
+	f, err := os.OpenFile("./resources/assets/"+t.Format("20060102")+"_"+fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
+	//defer f.Close()
+	//f, err := os.OpenFile("./resources/assets/" + fileName, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
+
+	if err != nil {
+		fmt.Printf("error opening file: %v", err)
+		f.Close()
+	}
+
+	_, err = f.WriteString(logMsg + ", ")
+	if err != nil {
+		fmt.Printf("error write file: %v", err)
+		f.Close()
+	}
+	f.Close()
+
+}
+
+
+
+func WriteToSyslog(level int, remote string, msg string) {
+	logMsg := "[" + remote + "]:" + msg
+	fmt.Println("logMsg: ", logMsg)
+	if *debug {
+		fmt.Println(logMsg)
+	}
+	syslogSender.Write("udp", cfg.System.Syslog, level, "MonitorSys", logMsg)
+}
+
+
+
+func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
+	return func(netw, addr string) (net.Conn, error) {
+		conn, err := net.DialTimeout(netw, addr, cTimeout)
+		if err != nil {
+			return nil, err
+		}
+		conn.SetDeadline(time.Now().Add(rwTimeout))
+		return conn, nil
+	}
+}
+
+func HttpsGet(url string, funcName string) (rspstring string, err error) {
+	var myClient = &http.Client{
+		Transport: &http.Transport{
+			Dial: timeoutDialer(time.Duration(10)*time.Second,
+				time.Duration(10)*time.Second),
+			ResponseHeaderTimeout: time.Second * 10,
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //for https
+		},
+	}
+	response, err := myClient.Get(url)
+	if err != nil {
+		fmt.Printf("[%s] http.Get => %v", funcName, err.Error())
+		return "", err
+	}
+	defer response.Body.Close()
+	contents, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		fmt.Printf("[%s] readall err: %s", funcName, err)
+		return "", err
+	}
+	rspstring = string(contents)
+	return rspstring, nil
+
+}
 
 
 func CheckDir() {
