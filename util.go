@@ -116,7 +116,7 @@ func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c 
 	}
 }
 
-func HttpsGet(url string, funcName string) (rspstring string, err error) {
+func HttpsGet(url string, funcName string) (rspcontent []byte, err error) {
 	var myClient = &http.Client{
 		Transport: &http.Transport{
 			Dial: timeoutDialer(time.Duration(10)*time.Second,
@@ -128,17 +128,16 @@ func HttpsGet(url string, funcName string) (rspstring string, err error) {
 	response, err := myClient.Get(url)
 	if err != nil {
 		fmt.Printf("[%s] http.Get => %v", funcName, err.Error())
-		return "", err
+		return nil, err
 	}
 	defer response.Body.Close()
-	contents, err := ioutil.ReadAll(response.Body)
+	rspcontents, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		fmt.Printf("[%s] readall err: %s", funcName, err)
-		return "", err
+		return nil, err
 	}
-	rspstring = string(contents)
-	return rspstring, nil
-
+	//rspstring = string(contents)
+	return rspcontents, nil
 }
 
 

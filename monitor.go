@@ -12,6 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"os/exec"
 	"sort"
 	"strconv"
@@ -19,7 +20,6 @@ import (
 	"sync"
 	"time"
 	//"net/url"
-	//"os"
 	//"net"
 	//"bytes"
 )
@@ -795,58 +795,21 @@ func GetReport() {
 	tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&length=%s&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
 	url0 := fmt.Sprintf(tmp_url, length)
 
-	content_str, err := HttpsGet(url0, "GetReport")
+	content, err := HttpsGet(url0, "GetReport")
 	if err != nil {
 		fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
-		return //tmppppp
-	}
-	data := map[string]interface{}{}
-	dec := json.NewDecoder(strings.NewReader(content_str))
-	dec.Decode(&data)
-	jq := jsonq.NewQuery(data)
-	liveThreatsChart, err := jq.ArrayOfArrays("liveThreatsChart", "Threats")
-	NetflowBandwidth, err := jq.ArrayOfArrays("NetflowBandwidth")
-	NetflowBandwidth = NetflowBandwidth[:len(NetflowBandwidth)-2]
-	liveReqsChart, err := jq.ArrayOfArrays("liveReqsChart", "Reqs")
-	CacheHit, err := jq.ArrayOfArrays("liveCacheChart", "CacheHit")
-	Legitimated, err := jq.ArrayOfArrays("liveLegitimatedChart", "Legitimated")
-	Upstream, err := jq.ArrayOfArrays("liveUpstreamChart", "Upstream")
-	if err != nil {
-		fmt.Println("jsonq Error: %s", err)
+		return //tmp
 	}
 
-	threats_min, threats_max, threats_avg := GetStatistic(liveThreatsChart)
-	NetflowBandwidth_min, NetflowBandwidth_max, NetflowBandwidth_avg := GetStatistic(NetflowBandwidth)
-	liveReqsChart_min, liveReqsChart_max, liveReqsChart_avg := GetStatistic(liveReqsChart)
-	CacheHit_min, CacheHit_max, CacheHit_avg := GetStatistic(CacheHit)
-	Legitimated_min, Legitimated_max, Legitimated_avg := GetStatistic(Legitimated)
-	Upstream_min, Upstream_max, Upstream_avg := GetStatistic(Upstream)
+	var report Report
+	json.Unmarshal(content, &report)
+	threats_min, threats_max, threats_avg := report.LiveThreatsChart["Threats"].GetMinMaxAvg()
+	NetflowBandwidth_min, NetflowBandwidth_max, NetflowBandwidth_avg := report.NetflowBandwidth[:len(report.NetflowBandwidth)-2].GetMinMaxAvg()
+	liveReqsChart_min, liveReqsChart_max, liveReqsChart_avg := report.LiveReqsChart["Reqs"].GetMinMaxAvg()
+	CacheHit_min, CacheHit_max, CacheHit_avg := report.LiveCacheChart["CacheHit"].GetMinMaxAvg()
+	Legitimated_min, Legitimated_max, Legitimated_avg := report.LiveLegitimatedChart["Legitimated"].GetMinMaxAvg()
+	Upstream_min, Upstream_max, Upstream_avg := report.LiveUpstreamChart["Upstream"].GetMinMaxAvg()
 
-	/*
-		fmt.Println("threats_min: ", threats_min)
-		fmt.Println("threats_max: ", threats_max)
-		fmt.Println("threats_avg: ", threats_avg)
-
-		fmt.Println("NetflowBandwidth_min: ", NetflowBandwidth_min)
-		fmt.Println("NetflowBandwidth_max: ", NetflowBandwidth_max)
-		fmt.Println("NetflowBandwidth_avg: ", NetflowBandwidth_avg)
-
-		fmt.Println("liveReqsChart_min: ", liveReqsChart_min)
-		fmt.Println("liveReqsChart_max: ", liveReqsChart_max)
-		fmt.Println("liveReqsChart_avg: ", liveReqsChart_avg)
-
-		fmt.Println("CacheHit_min: ", CacheHit_min)
-		fmt.Println("CacheHit_max: ", CacheHit_max)
-		fmt.Println("CacheHit_avg: ", CacheHit_avg)
-
-		fmt.Println("Legitimated_min: ", Legitimated_min)
-		fmt.Println("Legitimated_max: ", Legitimated_max)
-		fmt.Println("Legitimated_avg: ", Legitimated_avg)
-
-		fmt.Println("Upstream_min: ", Upstream_min)
-		fmt.Println("Upstream_max: ", Upstream_max)
-		fmt.Println("Upstream_avg: ", Upstream_avg)
-	*/
 	liveStatistic := "<br><br>LIVE REPORT: " +
 		"<br>Threats min: " + humanize.Comma(int64(threats_min)) +
 		"<br>Threats max: " + humanize.Comma(int64(threats_max)) +
@@ -871,13 +834,13 @@ func GetReport() {
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
 		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
-		content_str, err := HttpsGet(url, "GetReport")
+		content, err := HttpsGet(url, "GetReport")
 		if err != nil {
 			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
 			continue
 		}
 		data := map[string]interface{}{}
-		dec := json.NewDecoder(strings.NewReader(content_str))
+		dec := json.NewDecoder(strings.NewReader(string(content)))
 		dec.Decode(&data)
 		jq := jsonq.NewQuery(data)
 		OnlineUser, _ := jq.Int("OnlineUser", "S-76a919a5-a247-4728-9860-817b644bfe85")
@@ -927,7 +890,7 @@ func GetReport() {
 		jj.SiteSpeed = SiteSpeed
 
 		ElkInput("report_idx", "report", jj)
-		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //60 sec
+		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //120 sec
 	} //Forever loop
 }
 
@@ -940,13 +903,13 @@ func main() {
 	}
 	CheckDir()
 
-	//GetReport()
-	/*for {
+	GetReport()
+	for {
 		time.Sleep(60 * time.Second)
 	}
 
 	os.Exit(0)
-	*/
+
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}

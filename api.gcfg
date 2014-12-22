@@ -97,7 +97,8 @@ To = andy.shih@nexusguard.com
 
 [getreport]
 CheckTime = 15:59
-IntervalSeconds = 60 
+;IntervalSeconds = 60 
+IntervalSeconds = 120 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
