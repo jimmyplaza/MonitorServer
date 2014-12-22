@@ -12,7 +12,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+	//"os"
 	"os/exec"
 	"sort"
 	"strconv"
@@ -903,13 +903,13 @@ func main() {
 	}
 	CheckDir()
 
-	GetReport()
+	/*GetReport()
 	for {
 		time.Sleep(60 * time.Second)
 	}
 
 	os.Exit(0)
-
+	*/
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
