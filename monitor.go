@@ -142,10 +142,12 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				if flag_arr[flag_idx] == false && rspCode != 302 {
 					Title := "[G2Monitor][G2][Problem] - " + url
 					Body := "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-					if strings.Index(errMsg, "connection") != -1 {
-						prd := "0"
-						uat := "1"
-						GMonitorAudio(prd, uat)
+					if strings.Index(url, "g2.nexusguard") != -1 || strings.Index(url, "g2demo") != -1 {
+						if strings.Index(errMsg, "connection") != -1 {
+							prd := "0"
+							uat := "1"
+							GMonitorAudio(prd, uat)
+						}
 					}
 					MorningMail(SmtpServer, Port, From, To, Title, Body)
 					WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
@@ -160,9 +162,11 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 					if flag_arr[flag_idx] == true { //Revoery Mail, notify service is back
 						Title := "[G2Monitor][G2] [Recovery] - " + url
 						Body := "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-						prd := "0"
-						uat := "0"
-						GMonitorAudio(prd, uat)
+						if strings.Index(url, "g2.nexusguard") != -1 || strings.Index(url, "g2demo") != -1 {
+							prd := "0"
+							uat := "0"
+							GMonitorAudio(prd, uat)
+						}
 						MorningMail(SmtpServer, Port, From, To, Title, Body)
 					}
 					flag_arr[flag_idx] = false
