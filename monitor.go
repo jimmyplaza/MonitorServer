@@ -857,6 +857,7 @@ func GetReport() {
 				"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
 			Title := "[G2 Report] - " + "[AAH]"
 			Body := content
+			ElkInput("livereport_idx", "livereport", LiveReportOut)
 			MorningMail(SmtpServer, Port, From, To, Title, Body)
 		}
 		curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
