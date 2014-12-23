@@ -790,45 +790,10 @@ func GetReport() {
 	IntervalSeconds := cfg.GetReport.IntervalSeconds
 	jj := JsonReportType{}
 
-	// Every 2 min
+	//AAH
+	cid := "C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb"
 	length := "720"
-	tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&length=%s&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
-	url0 := fmt.Sprintf(tmp_url, length)
-
-	content, err := HttpsGet(url0, "GetReport")
-	if err != nil {
-		fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
-		return //tmp
-	}
-
-	var report Report
-	json.Unmarshal(content, &report)
-	threats_min, threats_max, threats_avg := report.LiveThreatsChart["Threats"].GetMinMaxAvg()
-	NetflowBandwidth_min, NetflowBandwidth_max, NetflowBandwidth_avg := report.NetflowBandwidth[:len(report.NetflowBandwidth)-2].GetMinMaxAvg()
-	liveReqsChart_min, liveReqsChart_max, liveReqsChart_avg := report.LiveReqsChart["Reqs"].GetMinMaxAvg()
-	CacheHit_min, CacheHit_max, CacheHit_avg := report.LiveCacheChart["CacheHit"].GetMinMaxAvg()
-	Legitimated_min, Legitimated_max, Legitimated_avg := report.LiveLegitimatedChart["Legitimated"].GetMinMaxAvg()
-	Upstream_min, Upstream_max, Upstream_avg := report.LiveUpstreamChart["Upstream"].GetMinMaxAvg()
-
-	liveStatistic := "<br><br>LIVE REPORT: " +
-		"<br>Threats min: " + humanize.Comma(int64(threats_min)) +
-		"<br>Threats max: " + humanize.Comma(int64(threats_max)) +
-		"<br>Threats avg: " + humanize.Comma(int64(threats_avg)) +
-		"<br>Bandwidth_min: " + humanize.Comma(int64(NetflowBandwidth_min)) +
-		"<br>Bandwidth_max: " + humanize.Comma(int64(NetflowBandwidth_max)) +
-		"<br>Bandwidth_avg: " + humanize.Comma(int64(NetflowBandwidth_avg)) +
-		"<br>Live Request min: " + humanize.Comma(int64(liveReqsChart_min)) +
-		"<br>Live Request max: " + humanize.Comma(int64(liveReqsChart_max)) +
-		"<br>Live Request avg: " + humanize.Comma(int64(liveReqsChart_avg)) +
-		"<br>CachHit_min: " + humanize.Comma(int64(CacheHit_min)) +
-		"<br>CachHit_max: " + humanize.Comma(int64(CacheHit_max)) +
-		"<br>CachHit_avg: " + humanize.Comma(int64(CacheHit_avg)) +
-		"<br>Legitimated_min: " + humanize.Comma(int64(Legitimated_min)) +
-		"<br>Legitimated_max: " + humanize.Comma(int64(Legitimated_max)) +
-		"<br>Legitimated_avg: " + humanize.Comma(int64(Legitimated_avg)) +
-		"<br>Serve by origin min: " + humanize.Comma(int64(Upstream_min)) +
-		"<br>Serve by origin max: " + humanize.Comma(int64(Upstream_max)) +
-		"<br>Serve by origin avg: " + humanize.Comma(int64(Upstream_avg))
+	sid := "S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d"
 
 	//AAH only, time total sum report
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
@@ -857,6 +822,27 @@ func GetReport() {
 		SiteSpeed, _ := jq.Int("SiteSpeed", "count")
 
 		if Now == CheckTime { //15:59
+			LiveReportOut := GetLiveReport(cid, sid, length)
+			liveStatistic := "<br><br>LIVE REPORT: " +
+				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) +
+				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) +
+				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) +
+				"<br>Bandwidth_min: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_min)) +
+				"<br>Bandwidth_max: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_max)) +
+				"<br>Bandwidth_avg: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_avg)) +
+				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) +
+				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) +
+				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) +
+				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) +
+				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) +
+				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) +
+				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) +
+				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) +
+				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) +
+				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) +
+				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) +
+				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg))
+
 			content := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
 				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
@@ -890,7 +876,7 @@ func GetReport() {
 		jj.SiteSpeed = SiteSpeed
 
 		ElkInput("report_idx", "report", jj)
-		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //120 sec
+		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //60 sec
 	} //Forever loop
 }
 
@@ -902,13 +888,13 @@ func main() {
 		log.Fatalf("Fail to load config file: %s\n", err)
 	}
 	CheckDir()
+	/*
+		GetReport()
+		for {
+			time.Sleep(60 * time.Second)
+		}
 
-	/*GetReport()
-	for {
-		time.Sleep(60 * time.Second)
-	}
-
-	os.Exit(0)
+		os.Exit(0)
 	*/
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite

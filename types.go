@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/abh/geoip"
-	"sort"
 	"sync"
 	//"os"
 )
@@ -11,30 +10,14 @@ import (
 type Nodes [][]int
 
 type Report struct {
-	Pageviews2           map[string]Nodes
-	Visitors2            map[string]Nodes
-	NetflowBandwidth     Nodes
-	LiveThreatsChart     map[string]Nodes
-	LiveReqsChart        map[string]Nodes
-	LiveCacheChart       map[string]Nodes
-	LiveLegitimatedChart map[string]Nodes
-	LiveUpstreamChart    map[string]Nodes
-}
-
-func (n Nodes) GetMinMaxAvg() (min, max int, avg int) {
-	intArray := []int{}
-	var sum int
-	for _, val := range n {
-		v := val[1]
-		sum = sum + v
-		intArray = append(intArray, v)
-	}
-	sort.Ints(intArray)
-	arr_len := len(intArray)
-	avg = sum / arr_len
-	min = intArray[0]
-	max = intArray[arr_len-1]
-	return min, max, avg
+    Pageviews2           map[string]Nodes
+    Visitors2            map[string]Nodes
+    NetflowBandwidth     Nodes
+    LiveThreatsChart     map[string]Nodes
+    LiveReqsChart        map[string]Nodes
+    LiveCacheChart       map[string]Nodes
+    LiveLegitimatedChart map[string]Nodes
+    LiveUpstreamChart    map[string]Nodes
 }
 
 type JsonType struct {
