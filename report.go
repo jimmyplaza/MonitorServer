@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
+	"time"
 )
 
 type JsonLiveReportType struct {
@@ -67,6 +69,10 @@ func GetLiveReport(cid, sid, length string) (out JsonLiveReportType) {
 	Legitimated_min, Legitimated_max, Legitimated_avg := report.LiveLegitimatedChart["Legitimated"].GetMinMaxAvg()
 	Upstream_min, Upstream_max, Upstream_avg := report.LiveUpstreamChart["Upstream"].GetMinMaxAvg()
 
+	curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
+	curtime = strings.Replace(curtime, " ", "T", 1)
+
+	out.Timestamp = curtime
 	out.Threats_min = Threats_min
 	out.Threats_max = Threats_max
 	out.Threats_avg = Threats_avg
