@@ -1,0 +1,22 @@
+{
+	"ImportPath": "MonitorServer",
+	"GoVersion": "go1.4",
+	"Deps": [
+		{
+			"ImportPath": "code.google.com/p/gcfg",
+			"Rev": "c2d3050044d05357eaf6c3547249ba57c5e235cb"
+		},
+		{
+			"ImportPath": "github.com/abh/geoip",
+			"Rev": "31328e916ea204913000d0089fb328ca037e4bc5"
+		},
+		{
+			"ImportPath": "github.com/dustin/go-humanize",
+			"Rev": "b198514c204f20799b91c93b6ffd8b26be04c2c9"
+		},
+		{
+			"ImportPath": "github.com/jmoiron/jsonq",
+			"Rev": "7c27c8eb9f6831555a4209f6a7d579159e766a3c"
+		}
+	]
+}
