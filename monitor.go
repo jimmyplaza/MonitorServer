@@ -14,7 +14,6 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
 	//"os"
-
 	"os/exec"
 	"sort"
 	"strconv"
@@ -112,7 +111,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 			}
 			t1 := time.Now()
 			nanoold := time.Now().UnixNano() / 1000000 //to ms
-			rsptime := time.Now().Format("2006-01-02 15:04")
+			rsptime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
 			rsptime = strings.Replace(rsptime, " ", "T", 1)
 			response, err := myClient.Get(url)
 			nanonew := time.Now().UnixNano() / 1000000 //to ms
@@ -225,7 +224,7 @@ func MonitorCustomerServer(Url []string, seconds int, To []string) {
 			}
 			t1 := time.Now()
 			nanoold := time.Now().UnixNano() / 1000000 //to ms
-			rsptime := time.Now().Format("2006-01-02 15:04")
+			rsptime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
 			rsptime = strings.Replace(rsptime, " ", "T", 1)
 
 			response, err := myClient.Get(url)
@@ -348,13 +347,13 @@ func MonitorBandwidth() {
 			fmt.Println("url: " + url)
 			response, err := myClient.Get(url)
 			/*
-				if response != nil {
-					//rspStatus = response.Status
-					rspStatus = ""
-					//rspCode = response.StatusCode
-				} else{
-					rspStatus = ""
-				}
+						if response != nil {
+				 		   //rspStatus = response.Status
+							rspStatus = ""
+				    	 	//rspCode = response.StatusCode
+						} else{
+							rspStatus = ""
+						}
 			*/
 			if err != nil {
 				fmt.Printf("%s", err)
@@ -401,12 +400,12 @@ func MonitorDataCenter(seconds int, To []string) {
 		monitorListObj[filterarr[0]] = filterarr[1:]
 	}
 	/*
-		for i, _ := range customer.List{
-			fmt.Println(customer.List[i].MoAlias)
-			fmt.Println(customer.List[i].SiteAliasList)
-			//fmt.Println(customer.List[i].MoId)
-			//fmt.Println(customer.List[i].SiteList)
-		}
+		    for i, _ := range customer.List{
+			    fmt.Println(customer.List[i].MoAlias)
+			    fmt.Println(customer.List[i].SiteAliasList)
+			    //fmt.Println(customer.List[i].MoId)
+			    //fmt.Println(customer.List[i].SiteList)
+		    }
 	*/
 
 	var myClient = &http.Client{
@@ -476,10 +475,10 @@ func MonitorDataCenter(seconds int, To []string) {
 						} else {
 							for t, _ := range allsite.List[CId][SId] {
 								/*fmt.Println("Current record: ============")
-								fmt.Println( m["DataCenter"][t].CenterCount)
-								fmt.Println("last record: ============")
-								fmt.Println(allsite.List[CId][SId][t])
-								fmt.Println("t: ", t)
+								        		fmt.Println( m["DataCenter"][t].CenterCount)
+								        		fmt.Println("last record: ============")
+										        fmt.Println(allsite.List[CId][SId][t])
+										        fmt.Println("t: ", t)
 								*/
 								if monitorListObj[MoAlias][t] == "1" { //"1" means need to monitor
 									//fmt.Println("need to monitor")
@@ -680,7 +679,7 @@ func DnsCheck() {
 				jj.Site = site
 				if currentip != "" {
 					fmt.Println(currentip)
-					curtime := time.Now().Format("2006-01-02 15:04:05")
+					curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
 					curtime = strings.Replace(curtime, " ", "T", 1)
 					jj.Timestamp = curtime
 					jj.CustomerName = CustomerName
@@ -757,7 +756,7 @@ DCenter:         @timestamp, normal/error,  [MoAlias], Site, DC
 */
 
 func MonitorVariation(CheckTime string) {
-	Now := time.Now().Format("15:04")
+	Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
 	if Now == CheckTime {
 		a, b := CheckVariation()
 		ReqRatio := strconv.FormatFloat(a, 'g', 2, 64)
@@ -800,7 +799,7 @@ func GetReport() {
 	//AAH only, time total sum report
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
-		Now := time.Now().Format("15:04")
+		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
 		content, err := HttpsGet(url, "GetReport")
 		if err != nil {
 			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
@@ -862,7 +861,7 @@ func GetReport() {
 			ElkInput("report_idx", "livereport", LiveReportOut)
 			MorningMail(SmtpServer, Port, From, To, Title, Body)
 		}
-		curtime := time.Now().Format("2006-01-02 15:04:05")
+		curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
 		curtime = strings.Replace(curtime, " ", "T", 1)
 		jj.Timestamp = curtime
 		jj.OnlineUser = OnlineUser
@@ -891,7 +890,6 @@ func main() {
 		log.Fatalf("Fail to load config file: %s\n", err)
 	}
 	CheckDir()
-
 	/*
 		GetReport()
 		for {
@@ -900,7 +898,6 @@ func main() {
 
 		os.Exit(0)
 	*/
-
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
