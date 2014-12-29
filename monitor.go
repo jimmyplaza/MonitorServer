@@ -14,7 +14,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
 	//"os"
-	"os"
+
 	"os/exec"
 	"sort"
 	"strconv"
@@ -892,12 +892,14 @@ func main() {
 	}
 	CheckDir()
 
-	GetReport()
-	for {
-		time.Sleep(60 * time.Second)
-	}
+	/*
+		GetReport()
+		for {
+			time.Sleep(60 * time.Second)
+		}
 
-	os.Exit(0)
+		os.Exit(0)
+	*/
 
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
