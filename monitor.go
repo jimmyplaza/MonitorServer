@@ -2,17 +2,19 @@
 package main
 
 import (
-	"code.google.com/p/gcfg"
 	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/dustin/go-humanize"
-	"github.com/jmoiron/jsonq"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"code.google.com/p/gcfg"
+	"github.com/dustin/go-humanize"
+	"github.com/jmoiron/jsonq"
 	//"os"
+	"os"
 	"os/exec"
 	"sort"
 	"strconv"
@@ -110,7 +112,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 			}
 			t1 := time.Now()
 			nanoold := time.Now().UnixNano() / 1000000 //to ms
-			rsptime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
+			rsptime := time.Now().Format("2006-01-02 15:04")
 			rsptime = strings.Replace(rsptime, " ", "T", 1)
 			response, err := myClient.Get(url)
 			nanonew := time.Now().UnixNano() / 1000000 //to ms
@@ -223,7 +225,7 @@ func MonitorCustomerServer(Url []string, seconds int, To []string) {
 			}
 			t1 := time.Now()
 			nanoold := time.Now().UnixNano() / 1000000 //to ms
-			rsptime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04"))
+			rsptime := time.Now().Format("2006-01-02 15:04")
 			rsptime = strings.Replace(rsptime, " ", "T", 1)
 
 			response, err := myClient.Get(url)
@@ -346,13 +348,13 @@ func MonitorBandwidth() {
 			fmt.Println("url: " + url)
 			response, err := myClient.Get(url)
 			/*
-						if response != nil {
-				 		   //rspStatus = response.Status
-							rspStatus = ""
-				    	 	//rspCode = response.StatusCode
-						} else{
-							rspStatus = ""
-						}
+				if response != nil {
+					//rspStatus = response.Status
+					rspStatus = ""
+					//rspCode = response.StatusCode
+				} else{
+					rspStatus = ""
+				}
 			*/
 			if err != nil {
 				fmt.Printf("%s", err)
@@ -399,12 +401,12 @@ func MonitorDataCenter(seconds int, To []string) {
 		monitorListObj[filterarr[0]] = filterarr[1:]
 	}
 	/*
-		    for i, _ := range customer.List{
-			    fmt.Println(customer.List[i].MoAlias)
-			    fmt.Println(customer.List[i].SiteAliasList)
-			    //fmt.Println(customer.List[i].MoId)
-			    //fmt.Println(customer.List[i].SiteList)
-		    }
+		for i, _ := range customer.List{
+			fmt.Println(customer.List[i].MoAlias)
+			fmt.Println(customer.List[i].SiteAliasList)
+			//fmt.Println(customer.List[i].MoId)
+			//fmt.Println(customer.List[i].SiteList)
+		}
 	*/
 
 	var myClient = &http.Client{
@@ -474,10 +476,10 @@ func MonitorDataCenter(seconds int, To []string) {
 						} else {
 							for t, _ := range allsite.List[CId][SId] {
 								/*fmt.Println("Current record: ============")
-								        		fmt.Println( m["DataCenter"][t].CenterCount)
-								        		fmt.Println("last record: ============")
-										        fmt.Println(allsite.List[CId][SId][t])
-										        fmt.Println("t: ", t)
+								fmt.Println( m["DataCenter"][t].CenterCount)
+								fmt.Println("last record: ============")
+								fmt.Println(allsite.List[CId][SId][t])
+								fmt.Println("t: ", t)
 								*/
 								if monitorListObj[MoAlias][t] == "1" { //"1" means need to monitor
 									//fmt.Println("need to monitor")
@@ -678,7 +680,7 @@ func DnsCheck() {
 				jj.Site = site
 				if currentip != "" {
 					fmt.Println(currentip)
-					curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
+					curtime := time.Now().Format("2006-01-02 15:04:05")
 					curtime = strings.Replace(curtime, " ", "T", 1)
 					jj.Timestamp = curtime
 					jj.CustomerName = CustomerName
@@ -755,7 +757,7 @@ DCenter:         @timestamp, normal/error,  [MoAlias], Site, DC
 */
 
 func MonitorVariation(CheckTime string) {
-	Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+	Now := time.Now().Format("15:04")
 	if Now == CheckTime {
 		a, b := CheckVariation()
 		ReqRatio := strconv.FormatFloat(a, 'g', 2, 64)
@@ -798,7 +800,7 @@ func GetReport() {
 	//AAH only, time total sum report
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
-		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+		Now := time.Now().Format("15:04")
 		content, err := HttpsGet(url, "GetReport")
 		if err != nil {
 			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
@@ -824,43 +826,43 @@ func GetReport() {
 		if Now == CheckTime { //15:59
 			LiveReportOut := GetLiveReport(cid, sid, length)
 			liveStatistic := "<br><br>LIVE REPORT: " +
-				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) +
-				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) +
-				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) +
-				"<br>Bandwidth_min: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_min)) +
-				"<br>Bandwidth_max: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_max)) +
-				"<br>Bandwidth_avg: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_avg)) +
-				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) +
-				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) +
-				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) +
-				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) +
-				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) +
-				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) +
-				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) +
-				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) +
-				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) +
-				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) +
-				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) +
-				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg))
+				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) + "  (request per 2min)" +
+				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) + "  (request per 2min)" +
+				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) + "  (request per 2min)" +
+				"<br>Bandwidth_min: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_min)) + "  (bits per 2min)" +
+				"<br>Bandwidth_max: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_max)) + "  (bits per 2min)" +
+				"<br>Bandwidth_avg: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_avg)) + "  (bits per 2min)" +
+				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) + "  (request per 2min)" +
+				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) + "  (request per 2min)" +
+				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) + "  (request per 2min)" +
+				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) + "  (hit per 2min)" +
+				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) + "  (hit per 2min)" +
+				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) + "  (hit per 2min)" +
+				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) + "  (request per 2min)" +
+				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) + "  (request per 2min)" +
+				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) + "  (redequest per 2min)" +
+				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) + "  (request per 2min)" +
+				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) + "  (request per 2min)" +
+				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg)) + "  (request per 2min)"
 
-			content := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
+			mailcontent := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
 				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
-				"Threats: " + humanize.Comma(int64(Threats)) + "<br>" +
+				"Threats: " + humanize.Comma(int64(Threats)) + "  (requests)<br>" +
 				"Bandwidth: " + humanize.Bytes(uint64(Bandwidth)) + "<br>" +
 				"BandwidthPeak: " + humanize.Bytes(uint64(BandwidthPeak)) + "<br>" +
-				"TotalRequest: " + humanize.Comma(int64(TotalRequest)) + "<br>" +
-				"CacheHit: " + humanize.Comma(int64(CacheHit)) + "<br>" +
-				"Legitimated: " + humanize.Comma(int64(Legitimated)) + "<br>" +
+				"TotalRequest: " + humanize.Comma(int64(TotalRequest)) + "  (requests)<br>" +
+				"CacheHit: " + humanize.Comma(int64(CacheHit)) + "  (hits)<br>" +
+				"Legitimated: " + humanize.Comma(int64(Legitimated)) + "  (requests)<br>" +
 				"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
-				"Serve by origin: " + humanize.Comma(int64(Upstream)) + "<br>" +
+				"Serve by origin: " + humanize.Comma(int64(Upstream)) + "  (requests)<br>" +
 				"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
 			Title := "[G2 Report] - " + "[AAH]"
-			Body := content
+			Body := mailcontent
 			ElkInput("report_idx", "livereport", LiveReportOut)
 			MorningMail(SmtpServer, Port, From, To, Title, Body)
 		}
-		curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
+		curtime := time.Now().Format("2006-01-02 15:04:05")
 		curtime = strings.Replace(curtime, " ", "T", 1)
 		jj.Timestamp = curtime
 		jj.OnlineUser = OnlineUser
@@ -889,14 +891,14 @@ func main() {
 		log.Fatalf("Fail to load config file: %s\n", err)
 	}
 	CheckDir()
-	/*
-		GetReport()
-		for {
-			time.Sleep(60 * time.Second)
-		}
 
-		os.Exit(0)
-	*/
+	GetReport()
+	for {
+		time.Sleep(60 * time.Second)
+	}
+
+	os.Exit(0)
+
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}

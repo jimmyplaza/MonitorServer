@@ -169,7 +169,6 @@ IntervalSeconds = 300
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = matis.hsiao@nexusguard.com
-To = olive.ting@nexusguard.com
 FilterCustomer = Riche88
 FilterCustomer = IMH 
 
