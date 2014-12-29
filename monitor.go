@@ -2,16 +2,17 @@
 package main
 
 import (
-	"code.google.com/p/gcfg"
 	"crypto/tls"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/dustin/go-humanize"
-	"github.com/jmoiron/jsonq"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"code.google.com/p/gcfg"
+	"github.com/dustin/go-humanize"
+	"github.com/jmoiron/jsonq"
 	//"os"
 	"os/exec"
 	"sort"
@@ -824,39 +825,39 @@ func GetReport() {
 		if Now == CheckTime { //15:59
 			LiveReportOut := GetLiveReport(cid, sid, length)
 			liveStatistic := "<br><br>LIVE REPORT: " +
-				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) +
-				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) +
-				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) +
-				"<br>Bandwidth_min: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_min)) +
-				"<br>Bandwidth_max: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_max)) +
-				"<br>Bandwidth_avg: " + humanize.Comma(int64(LiveReportOut.NetflowBandwidth_avg)) +
-				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) +
-				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) +
-				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) +
-				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) +
-				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) +
-				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) +
-				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) +
-				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) +
-				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) +
-				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) +
-				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) +
-				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg))
+				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) + "  (request per 2min)" +
+				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) + "  (request per 2min)" +
+				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) + "  (request per 2min)" +
+				"<br>Bandwidth_min: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_min)) + "  (bits per 2min)" +
+				"<br>Bandwidth_max: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_max)) + "  (bits per 2min)" +
+				"<br>Bandwidth_avg: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_avg)) + "  (bits per 2min)" +
+				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) + "  (request per 2min)" +
+				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) + "  (request per 2min)" +
+				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) + "  (request per 2min)" +
+				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) + "  (hit per 2min)" +
+				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) + "  (hit per 2min)" +
+				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) + "  (hit per 2min)" +
+				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) + "  (request per 2min)" +
+				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) + "  (request per 2min)" +
+				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) + "  (redequest per 2min)" +
+				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) + "  (request per 2min)" +
+				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) + "  (request per 2min)" +
+				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg)) + "  (request per 2min)"
 
-			content := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
+			mailcontent := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
 				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
-				"Threats: " + humanize.Comma(int64(Threats)) + "<br>" +
+				"Threats: " + humanize.Comma(int64(Threats)) + "  (requests)<br>" +
 				"Bandwidth: " + humanize.Bytes(uint64(Bandwidth)) + "<br>" +
 				"BandwidthPeak: " + humanize.Bytes(uint64(BandwidthPeak)) + "<br>" +
-				"TotalRequest: " + humanize.Comma(int64(TotalRequest)) + "<br>" +
-				"CacheHit: " + humanize.Comma(int64(CacheHit)) + "<br>" +
-				"Legitimated: " + humanize.Comma(int64(Legitimated)) + "<br>" +
+				"TotalRequest: " + humanize.Comma(int64(TotalRequest)) + "  (requests)<br>" +
+				"CacheHit: " + humanize.Comma(int64(CacheHit)) + "  (hits)<br>" +
+				"Legitimated: " + humanize.Comma(int64(Legitimated)) + "  (requests)<br>" +
 				"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
-				"Serve by origin: " + humanize.Comma(int64(Upstream)) + "<br>" +
+				"Serve by origin: " + humanize.Comma(int64(Upstream)) + "  (requests)<br>" +
 				"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
 			Title := "[G2 Report] - " + "[AAH]"
-			Body := content
+			Body := mailcontent
 			ElkInput("report_idx", "livereport", LiveReportOut)
 			MorningMail(SmtpServer, Port, From, To, Title, Body)
 		}
