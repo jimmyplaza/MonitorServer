@@ -2,4 +2,5 @@
 
 sh killMonitor.sh 
 
-nohup ./MonitorServer &
+#nohup ./MonitorServer &
+nohup ./MonitorServer 
