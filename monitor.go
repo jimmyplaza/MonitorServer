@@ -634,7 +634,7 @@ func CheckCacheRatio() {
 				ratio := strconv.Itoa(CacheRatio)
 				if CacheRatio < CacheRatioBound {
 					Title := "[G2Monitor] - " + "[Cache Ratio]" + errMsg[u] + " Cache rate abnormal!"
-					Body := errMsg[u] + "<br>Current ratio: " + ratio + "%" + "  (current trigger level is < " + strconv.Itoa(CacheRatioBound) + "%"
+					Body := errMsg[u] + "<br>Current ratio: " + ratio + "%" + "(current trigger level is < " + strconv.Itoa(CacheRatioBound) + "%)"
 					MorningMail(SmtpServer, Port, From, To, Title, Body)
 				}
 				a := (float64(Upstream) / float64(TotalRequest)) * 100
