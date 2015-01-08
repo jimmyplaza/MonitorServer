@@ -1,22 +1,21 @@
 package main
 
-import (	
+import (
+	"crypto/tls"
 	"encoding/json"
-	"fmt"	
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
-	"crypto/tls"
-
 )
 
-func getCustomers(url string) []customerObject {	
+func getCustomers(url string) []customerObject {
 	var myClient = &http.Client{
 		Transport: &http.Transport{
 			Dial: timeoutDialer(time.Duration(cfg.Gen.Timeout)*time.Second,
 				time.Duration(cfg.Gen.Timeout)*time.Second),
 			ResponseHeaderTimeout: time.Second * 2,
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true},
 		},
 	}
 
@@ -46,4 +45,3 @@ func getCustomers(url string) []customerObject {
 	}
 	return obj
 }
-

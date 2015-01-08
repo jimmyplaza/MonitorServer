@@ -100,11 +100,14 @@ CheckTime = 15:59
 IntervalSeconds = 60 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
-To = steve.tsai@nexusguard.com
 To = olive.ting@nexusguard.com
 To = matis.hsiao@nexusguard.com
 To = young.cheng@nexusguard.com
 To = jean.lin@nexusguard.com
+To = andy.shih@nexusguard.com
+To = kevin.chiu@nexusguard.com
+To = eric.kuo@nexusguard.com 
+To = reggie.yam@nexusguard.com
 
 
 
