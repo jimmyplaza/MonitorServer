@@ -825,24 +825,24 @@ func GetReport() {
 		if Now == CheckTime { //15:59
 			LiveReportOut := GetLiveReport(cid, sid, length)
 			liveStatistic := "<br><br>LIVE REPORT: " +
-				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) + "  (request per 2min)" +
-				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) + "  (request per 2min)" +
-				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) + "  (request per 2min)" +
-				"<br>Bandwidth_min: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_min)) + "  (bits per 2min)" +
-				"<br>Bandwidth_max: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_max)) + "  (bits per 2min)" +
-				"<br>Bandwidth_avg: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_avg)) + "  (bits per 2min)" +
-				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) + "  (request per 2min)" +
-				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) + "  (request per 2min)" +
-				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) + "  (request per 2min)" +
-				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) + "  (hit per 2min)" +
-				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) + "  (hit per 2min)" +
-				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) + "  (hit per 2min)" +
-				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) + "  (request per 2min)" +
-				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) + "  (request per 2min)" +
-				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) + "  (redequest per 2min)" +
-				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) + "  (request per 2min)" +
-				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) + "  (request per 2min)" +
-				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg)) + "  (request per 2min)"
+				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) + "  (request per min)" +
+				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) + "  (request per min)" +
+				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) + "  (request per min)" +
+				"<br>Bandwidth_min: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_min)) + "  (bits per min)" +
+				"<br>Bandwidth_max: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_max)) + "  (bits per min)" +
+				"<br>Bandwidth_avg: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_avg)) + "  (bits per min)" +
+				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) + "  (request per min)" +
+				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) + "  (request per min)" +
+				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) + "  (request per min)" +
+				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) + "  (hit per min)" +
+				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) + "  (hit per min)" +
+				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) + "  (hit per min)" +
+				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) + "  (request per min)" +
+				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) + "  (request per min)" +
+				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) + "  (redequest per min)" +
+				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) + "  (request per min)" +
+				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) + "  (request per min)" +
+				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg)) + "  (request per min)"
 
 			mailcontent := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
