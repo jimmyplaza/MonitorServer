@@ -11,9 +11,11 @@ import (
 	"net/http"
 
 	"code.google.com/p/gcfg"
+
 	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
 	//"os"
+	"os"
 	"os/exec"
 	"sort"
 	"strconv"
@@ -784,101 +786,137 @@ func GetStatistic(obj [][]interface{}) (min, max, avg float64) {
 	return min, max, avg
 }
 
+func ChooseCustomer(tmpurl string, MonitorList []string) (url_arr []string, mail_title []string) {
+	MonitorArray := make(map[string]bool)
+	for _, MoAlias := range MonitorList {
+		MonitorArray[MoAlias] = true
+	}
+	for i, _ := range customer.List {
+		CId := customer.List[i].MoId
+		MoAlias := customer.List[i].MoAlias
+		if MonitorArray[MoAlias] == true {
+			//fmt.Println(MoAlias)
+			for s, SId := range customer.List[i].SiteList {
+				urlstr := fmt.Sprintf(tmpurl, CId, SId)
+				//fmt.Println(urlstr)
+				url_arr = append(url_arr, urlstr)
+				titlestr := "[" + MoAlias + "] - " + customer.List[i].SiteAliasList[s]
+				//fmt.Println(titlestr)
+				mail_title = append(mail_title, titlestr)
+			}
+		}
+	}
+	return url_arr, mail_title
+}
+
 func GetReport() {
 	funcname := "GetReport"
 	CheckTime := cfg.GetReport.CheckTime
 	To := cfg.GetReport.To
-	IntervalSeconds := cfg.GetReport.IntervalSeconds
-	jj := JsonReportType{}
+	ReportList := cfg.GetReport.ReportList
+	//IntervalSeconds := cfg.GetReport.IntervalSeconds
+	//jj := JsonReportType{}
 
 	//AAH
-	cid := "C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb"
-	length := "720"
-	sid := "S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d"
+	//cid := "C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb"
+	//length := "720"
+	//sid := "S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d"
 
-	//AAH only, time total sum report
-	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
+	sum_tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
+	sum_url_arr, sum_mail_title := ChooseCustomer(sum_tmp_url, ReportList)
+	//!! length = 720
+	live_tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&length=720s&site_id=%s&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
+	live_url_arr, _ := ChooseCustomer(live_tmp_url, ReportList)
+
+	//url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
 		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
-		content, err := HttpsGet(url, "GetReport")
-		if err != nil {
-			fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
-			continue
-		}
-		data := map[string]interface{}{}
-		dec := json.NewDecoder(strings.NewReader(string(content)))
-		dec.Decode(&data)
-		jq := jsonq.NewQuery(data)
-		OnlineUser, _ := jq.Int("OnlineUser", "S-76a919a5-a247-4728-9860-817b644bfe85")
-		Pageviews, _ := jq.Int("AvgPage", "Pageviews")
-		Visitors, _ := jq.Int("AvgPage", "Visitors")
-		Threats, _ := jq.Int("cddInfoData", "Threats", "threats")
-		Bandwidth, _ := jq.Int("Netflow", "BandwidthIn")
-		BandwidthPeak, _ := jq.Int("Netflow", "BandwidthMaxIn")
-		TotalRequest, _ := jq.Int("cddInfoData", "Reqs", "reqs")
-		CacheHit, _ := jq.Int("cddInfoData", "CacheData", "CacheHit")
-		Legitimated, _ := jq.Int("cddInfoData", "Legitimated", "Legitimated")
-		CacheRatio, _ := jq.Int("cddInfoData", "CacheData", "CachePercent")
-		Upstream, _ := jq.Int("cddInfoData", "Upstream", "Upstream")
-		SiteSpeed, _ := jq.Int("SiteSpeed", "count")
-
 		if Now == CheckTime { //15:59
-			LiveReportOut := GetLiveReport(cid, sid, length)
-			liveStatistic := "<br><br>LIVE REPORT: " +
-				"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) + "  (request per min)" +
-				"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) + "  (request per min)" +
-				"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) + "  (request per min)" +
-				"<br>Bandwidth_min: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_min)) + "  (bits per min)" +
-				"<br>Bandwidth_max: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_max)) + "  (bits per min)" +
-				"<br>Bandwidth_avg: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_avg)) + "  (bits per min)" +
-				"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) + "  (request per min)" +
-				"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) + "  (request per min)" +
-				"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) + "  (request per min)" +
-				"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) + "  (hit per min)" +
-				"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) + "  (hit per min)" +
-				"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) + "  (hit per min)" +
-				"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) + "  (request per min)" +
-				"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) + "  (request per min)" +
-				"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) + "  (redequest per min)" +
-				"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) + "  (request per min)" +
-				"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) + "  (request per min)" +
-				"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg)) + "  (request per min)"
+			//Total Sum
+			for i, url := range sum_url_arr {
 
-			mailcontent := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
-				"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
-				"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
-				"Threats: " + humanize.Comma(int64(Threats)) + "  (requests)<br>" +
-				"Bandwidth: " + humanize.Bytes(uint64(Bandwidth)) + "<br>" +
-				"BandwidthPeak: " + humanize.Bytes(uint64(BandwidthPeak)) + "<br>" +
-				"TotalRequest: " + humanize.Comma(int64(TotalRequest)) + "  (requests)<br>" +
-				"CacheHit: " + humanize.Comma(int64(CacheHit)) + "  (hits)<br>" +
-				"Legitimated: " + humanize.Comma(int64(Legitimated)) + "  (requests)<br>" +
-				"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
-				"Serve by origin: " + humanize.Comma(int64(Upstream)) + "  (requests)<br>" +
-				"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
-			Title := "[G2 Report] - " + "[AAH]"
-			Body := mailcontent
-			ElkInput("report_idx", "livereport", LiveReportOut)
-			MorningMail(SmtpServer, Port, From, To, Title, Body)
-		}
-		curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
-		curtime = strings.Replace(curtime, " ", "T", 1)
-		jj.Timestamp = curtime
-		jj.OnlineUser = OnlineUser
-		jj.Pageviews = Pageviews
-		jj.Visitors = Visitors
-		jj.Threats = Threats
-		jj.Bandwidth = Bandwidth
-		jj.BandwidthPeak = BandwidthPeak
-		jj.TotalRequest = TotalRequest
-		jj.CacheHit = CacheHit
-		jj.Legitimated = Legitimated
-		jj.CacheRatio = CacheRatio
-		jj.Upstream = Upstream
-		jj.SiteSpeed = SiteSpeed
+				content, err := HttpsGet(url, "GetReport")
+				if err != nil {
+					fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
+					continue
+				}
+				data := map[string]interface{}{}
+				dec := json.NewDecoder(strings.NewReader(string(content)))
+				dec.Decode(&data)
+				jq := jsonq.NewQuery(data)
+				OnlineUser, _ := jq.Int("OnlineUser", "S-76a919a5-a247-4728-9860-817b644bfe85")
+				Pageviews, _ := jq.Int("AvgPage", "Pageviews")
+				Visitors, _ := jq.Int("AvgPage", "Visitors")
+				Threats, _ := jq.Int("cddInfoData", "Threats", "threats")
+				Bandwidth, _ := jq.Int("Netflow", "BandwidthIn")
+				BandwidthPeak, _ := jq.Int("Netflow", "BandwidthMaxIn")
+				TotalRequest, _ := jq.Int("cddInfoData", "Reqs", "reqs")
+				CacheHit, _ := jq.Int("cddInfoData", "CacheData", "CacheHit")
+				Legitimated, _ := jq.Int("cddInfoData", "Legitimated", "Legitimated")
+				CacheRatio, _ := jq.Int("cddInfoData", "CacheData", "CachePercent")
+				Upstream, _ := jq.Int("cddInfoData", "Upstream", "Upstream")
+				SiteSpeed, _ := jq.Int("SiteSpeed", "count")
 
-		ElkInput("report_idx", "report", jj)
-		time.Sleep(time.Duration(IntervalSeconds) * time.Second) //60 sec
+				//Live Report
+				LiveReportOut := GetLiveReport(live_url_arr[i])
+				liveStatistic := "<br><br>LIVE REPORT: " +
+					"<br>Threats min: " + humanize.Comma(int64(LiveReportOut.Threats_min)) + "  (request per min)" +
+					"<br>Threats max: " + humanize.Comma(int64(LiveReportOut.Threats_max)) + "  (request per min)" +
+					"<br>Threats avg: " + humanize.Comma(int64(LiveReportOut.Threats_avg)) + "  (request per min)" +
+					"<br>Bandwidth_min: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_min)) + "  (bits per min)" +
+					"<br>Bandwidth_max: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_max)) + "  (bits per min)" +
+					"<br>Bandwidth_avg: " + humanize.Bytes(uint64(LiveReportOut.NetflowBandwidth_avg)) + "  (bits per min)" +
+					"<br>Live Request min: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_min)) + "  (request per min)" +
+					"<br>Live Request max: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_max)) + "  (request per min)" +
+					"<br>Live Request avg: " + humanize.Comma(int64(LiveReportOut.LiveReqsChart_avg)) + "  (request per min)" +
+					"<br>CachHit_min: " + humanize.Comma(int64(LiveReportOut.CacheHit_min)) + "  (hit per min)" +
+					"<br>CachHit_max: " + humanize.Comma(int64(LiveReportOut.CacheHit_max)) + "  (hit per min)" +
+					"<br>CachHit_avg: " + humanize.Comma(int64(LiveReportOut.CacheHit_avg)) + "  (hit per min)" +
+					"<br>Legitimated_min: " + humanize.Comma(int64(LiveReportOut.Legitimated_min)) + "  (request per min)" +
+					"<br>Legitimated_max: " + humanize.Comma(int64(LiveReportOut.Legitimated_max)) + "  (request per min)" +
+					"<br>Legitimated_avg: " + humanize.Comma(int64(LiveReportOut.Legitimated_avg)) + "  (redequest per min)" +
+					"<br>Serve by origin min: " + humanize.Comma(int64(LiveReportOut.Upstream_min)) + "  (request per min)" +
+					"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) + "  (request per min)" +
+					"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg)) + "  (request per min)"
+
+				mailcontent := "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
+					"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
+					"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
+					"Threats: " + humanize.Comma(int64(Threats)) + "  (requests)<br>" +
+					"Bandwidth: " + humanize.Bytes(uint64(Bandwidth)) + "<br>" +
+					"BandwidthPeak: " + humanize.Bytes(uint64(BandwidthPeak)) + "<br>" +
+					"TotalRequest: " + humanize.Comma(int64(TotalRequest)) + "  (requests)<br>" +
+					"CacheHit: " + humanize.Comma(int64(CacheHit)) + "  (hits)<br>" +
+					"Legitimated: " + humanize.Comma(int64(Legitimated)) + "  (requests)<br>" +
+					"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
+					"Serve by origin: " + humanize.Comma(int64(Upstream)) + "  (requests)<br>" +
+					"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
+				//Title := "[G2 Report] - " + "[AAH]"
+				Title := sum_mail_title[i]
+				Body := mailcontent
+				//ElkInput("report_idx", "livereport", LiveReportOut)
+				MorningMail(SmtpServer, Port, From, To, Title, Body)
+			} // range sum_url_arr
+		} //if Now == CheckTime
+		/*
+			curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
+			curtime = strings.Replace(curtime, " ", "T", 1)
+			jj.Timestamp = curtime
+			jj.OnlineUser = OnlineUser
+			jj.Pageviews = Pageviews
+			jj.Visitors = Visitors
+			jj.Threats = Threats
+			jj.Bandwidth = Bandwidth
+			jj.BandwidthPeak = BandwidthPeak
+			jj.TotalRequest = TotalRequest
+			jj.CacheHit = CacheHit
+			jj.Legitimated = Legitimated
+			jj.CacheRatio = CacheRatio
+			jj.Upstream = Upstream
+			jj.SiteSpeed = SiteSpeed
+			ElkInput("report_idx", "report", jj)
+		*/
+		//time.Sleep(time.Duration(IntervalSeconds) * time.Second) //60 sec
 	} //Forever loop
 }
 
@@ -890,17 +928,15 @@ func main() {
 		log.Fatalf("Fail to load config file: %s\n", err)
 	}
 	CheckDir()
-	/*
-		GetReport()
-		for {
-			time.Sleep(60 * time.Second)
-		}
-
-		os.Exit(0)
-	*/
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
+
+	GetReport()
+	for {
+		time.Sleep(60 * time.Second)
+	}
+	os.Exit(0)
 
 	SmtpServer = cfg.Mail.SmtpServer
 	Port = cfg.Mail.Port

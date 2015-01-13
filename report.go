@@ -46,11 +46,12 @@ func (n Nodes) GetMinMaxAvg() (min, max, avg int) {
 	return min, max, avg
 }
 
-func GetLiveReport(cid, sid, length string) (out JsonLiveReportType) {
+//func GetLiveReport(cid, sid, length string) (out JsonLiveReportType) {
+func GetLiveReport(url string) (out JsonLiveReportType) {
 	var report Report
 	funcname := "GetReport"
-	tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&length=%s&site_id=%s&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
-	url := fmt.Sprintf(tmp_url, cid, length, sid)
+	//tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&length=%s&site_id=%s&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
+	//url := fmt.Sprintf(tmp_url, cid, length, sid)
 
 	content, err := HttpsGet(url, funcname)
 	if err != nil {

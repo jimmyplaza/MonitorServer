@@ -76,6 +76,7 @@ type cfgObject struct {
 		CheckTime       string
 		IntervalSeconds int
 		To              []string
+		ReportList 	[]string
 	}
 	DnsCheck struct {
 		IntervalSeconds int
