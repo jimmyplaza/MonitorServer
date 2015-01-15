@@ -15,7 +15,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
 	//"os"
-	"os"
+
 	"os/exec"
 	"sort"
 	"strconv"
@@ -811,7 +811,7 @@ func ChooseCustomer(tmpurl string, MonitorList []string) (url_arr []string, mail
 
 func GetReport() {
 	funcname := "GetReport"
-	//CheckTime := cfg.GetReport.CheckTime
+	CheckTime := cfg.GetReport.CheckTime
 	To := cfg.GetReport.To
 	ReportList := cfg.GetReport.ReportList
 	//IntervalSeconds := cfg.GetReport.IntervalSeconds
@@ -830,9 +830,8 @@ func GetReport() {
 
 	//url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
-		//Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
-		//if Now == CheckTime { //15:59
-		if 1 == 1 {
+		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+		if Now == CheckTime { //15:59
 			//Total Sum
 			for i, url := range sum_url_arr {
 
@@ -933,12 +932,13 @@ func main() {
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
 
-	GetReport()
-	for {
-		time.Sleep(60 * time.Second)
-	}
-	os.Exit(0)
-
+	/*
+		GetReport()
+		for {
+			time.Sleep(60 * time.Second)
+		}
+		os.Exit(0)
+	*/
 	SmtpServer = cfg.Mail.SmtpServer
 	Port = cfg.Mail.Port
 	From = cfg.Mail.From
