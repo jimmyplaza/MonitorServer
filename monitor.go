@@ -811,7 +811,7 @@ func ChooseCustomer(tmpurl string, MonitorList []string) (url_arr []string, mail
 
 func GetReport() {
 	funcname := "GetReport"
-	CheckTime := cfg.GetReport.CheckTime
+	//CheckTime := cfg.GetReport.CheckTime
 	To := cfg.GetReport.To
 	ReportList := cfg.GetReport.ReportList
 	//IntervalSeconds := cfg.GetReport.IntervalSeconds
@@ -825,13 +825,14 @@ func GetReport() {
 	sum_tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	sum_url_arr, sum_mail_title := ChooseCustomer(sum_tmp_url, ReportList)
 	//!! length = 720
-	live_tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&length=720s&site_id=%s&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
+	live_tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&length=720&site_id=%s&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
 	live_url_arr, _ := ChooseCustomer(live_tmp_url, ReportList)
 
 	//url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
-		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
-		if Now == CheckTime { //15:59
+		//Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+		//if Now == CheckTime { //15:59
+		if 1 == 1 {
 			//Total Sum
 			for i, url := range sum_url_arr {
 

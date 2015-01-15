@@ -60,7 +60,7 @@ func GetLiveReport(url string) (out JsonLiveReportType) {
 	}
 	err = json.Unmarshal(content, &report)
 	if err != nil {
-		fmt.Println("error:", err)
+		fmt.Println("Error: [%s]: json.Unmarshal-> %v", funcname, err.Error())
 		return
 	}
 	Threats_min, Threats_max, Threats_avg := report.LiveThreatsChart["Threats"].GetMinMaxAvg()

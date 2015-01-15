@@ -97,7 +97,7 @@ To = andy.shih@nexusguard.com
 
 [getreport]
 ;CheckTime = 15:59
-CheckTime = 17:31 
+CheckTime = 11:05 
 IntervalSeconds = 60 
 ReportList = AAH
 ReportList = EDB 
