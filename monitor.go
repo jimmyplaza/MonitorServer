@@ -956,7 +956,7 @@ func main() {
 	go MonitorCustomerServer(allCustomerSite, IntervalSeconds2, To1)
 
 	//===================== Portal Customer Bandwidth ===================
-	go MonitorBandwidth()
+	//go MonitorBandwidth()
 
 	// ==================== Portal DataCenter =======================
 	IntervalSeconds0 := cfg.MonitorDC.IntervalSeconds
