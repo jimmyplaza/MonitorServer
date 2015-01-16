@@ -306,33 +306,33 @@ func MonitorBandwidth() {
 			TLSClientConfig:       &tls.Config{InsecureSkipVerify: true}, //for https
 		},
 	}
-	/*
-		SmtpServer:= cfg.Mail.SmtpServer
-		Port := cfg.Mail.Port
-		From := cfg.Mail.From
-	*/
 	seconds := cfg.MonitorBand.IntervalSeconds
 	To := cfg.MonitorBand.To
 
 	var m []int
 	var url_arr []string
 	var errMsg []string
+	length := "5"
 	//var rspStatus string
 
 	//var b interface{}
 	//var rspCode int
-	tmpurl := "https://g2api.nexusguard.com/API/NetflowBandwidth/2?cust_id="
+	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidthHour"
+	//tmpurl := "https://g2api.nexusguard.com/API/NetflowBandwidth/2?cust_id="
 	tmperr := " has zero Bandwidth recent 10 minutes"
+
 	for i, _ := range customer.List {
 		CId := customer.List[i].MoId
 		MoAlias := customer.List[i].MoAlias
 		for j, _ := range cfg.MonitorBand.MonitorList {
 			if MoAlias == cfg.MonitorBand.MonitorList[j] {
-				fmt.Println(MoAlias)
-				urlstr := tmpurl + CId + "&length=5"
-				url_arr = append(url_arr, urlstr)
-				errstr := "[Monitor Bandwidth] - " + MoAlias + tmperr
-				errMsg = append(errMsg, errstr)
+				for s, SId := range customer.List[i].SiteList {
+					//urlstr := tmpurl + CId + "&length=5"
+					urlstr := fmt.Sprintf(tmpurl, CId, SId, length)
+					url_arr = append(url_arr, urlstr)
+					errstr := "[Monitor Bandwidth]" + "[" + MoAlias + "] - " + customer.List[i].SiteAliasList[s] + tmperr
+					errMsg = append(errMsg, errstr)
+				}
 			}
 		}
 	}
