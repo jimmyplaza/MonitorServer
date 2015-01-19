@@ -134,11 +134,13 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				WriteToLogFile(url, "DIE", responseTime, filepath1)
 				errMsg = fmt.Sprintf("%s", err)
 				if strings.Index(errMsg, "timeout") != -1 {
-					fmt.Println("Only Jjimmy, timeout")
 					ToJ[0] = "jimmy.ko@nexusguard.com"
 					Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
 					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
 					MorningMail(SmtpServer, Port, From, ToJ, Title, Body)
+					continue
+				}
+				if strings.Index(errMsg, "EOF") != -1 {
 					continue
 				}
 				jj.Status = 1 //down
@@ -892,7 +894,7 @@ func GetReport() {
 					"Serve by origin: " + humanize.Comma(int64(Upstream)) + "  (requests)<br>" +
 					"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
 				//Title := "[G2 Report] - " + "[AAH]"
-				Title := sum_mail_title[i]
+				Title := "[Report]" + sum_mail_title[i]
 				Body := mailcontent
 				//ElkInput("report_idx", "livereport", LiveReportOut)
 				MorningMail(SmtpServer, Port, From, To, Title, Body)
