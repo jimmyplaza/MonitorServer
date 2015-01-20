@@ -102,6 +102,7 @@ ReportList = AAH
 ReportList = EDB 
 ReportList = Nexusguard
 ReportList = HTB 
+ReportList = HKOGCIO 
 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
