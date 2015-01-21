@@ -5,6 +5,12 @@ To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = eric.kuo@nexusguard.com 
 
+[g2server "http://g2.nexusguard.com"]
+To = jimmy.ko@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com
+To = eric.kuo@nexusguard.com 
+
 [g2server "http://g2demo.nxg.me"] 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
@@ -113,10 +119,7 @@ To = young.cheng@nexusguard.com
 To = jean.lin@nexusguard.com
 To = andy.shih@nexusguard.com
 To = kevin.chiu@nexusguard.com
-To = eric.kuo@nexusguard.com 
 To = reggie.yam@nexusguard.com
-
-
 
 
 [checkcacheratio]
