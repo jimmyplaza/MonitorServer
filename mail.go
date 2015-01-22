@@ -24,7 +24,8 @@ func MorningMail(SmtpServer, Port, From string, Too []string, Title, BodyMsg str
 		To = To + t + " , "
 	}
 	To = To[:len(To)-3]
-	uurl := "http://g2tool.cloudapp.net:445/morningbird"
+	//uurl := "http://g2tool.cloudapp.net:445/morningbird"
+	uurl := "http://gcptools.nexusguard.com:445/morningbird"
 	var myClient = &http.Client{
 		Transport: &http.Transport{
 			Dial: timeoutDialer(time.Duration(10)*time.Second,
