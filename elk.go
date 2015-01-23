@@ -27,7 +27,8 @@ func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c 
 
 */
 func ElkInput(index, table string, obj interface{}) {
-	url := "http://g2tool.cloudapp.net:9200/" + index + "/" + table + "/"
+	//url := "http://g2tool.cloudapp.net:9200/" + index + "/" + table + "/"
+	url := "http://gcptools.nexusguard.com:9200/" + index + "/" + table + "/"
 	var myClient = &http.Client{
 		Transport: &http.Transport{
 			Dial: timeoutDialer(time.Duration(10)*time.Second,
