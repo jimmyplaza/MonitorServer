@@ -30,7 +30,7 @@ type JsonLiveReportType struct {
 	Upstream_avg         int    `json:"upstream_avg"`
 }
 
-func (n Nodes) GetMinMaxAvg() (min, max, avg int) {
+func (n Nodes0) GetMinMaxAvg() (min, max, avg int) {
 	intArray := []int{}
 	var sum int
 	for _, val := range n {
@@ -48,7 +48,7 @@ func (n Nodes) GetMinMaxAvg() (min, max, avg int) {
 
 //func GetLiveReport(cid, sid, length string) (out JsonLiveReportType) {
 func GetLiveReport(url string) (out JsonLiveReportType) {
-	var report Report
+	var report Report0
 	funcname := "GetReport"
 	//tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&length=%s&site_id=%s&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
 	//url := fmt.Sprintf(tmp_url, cid, length, sid)

@@ -7,17 +7,17 @@ import (
 	//"os"
 )
 
-type Nodes [][]int
+type Nodes0 [][]int
 
-type Report struct {
-    Pageviews2           map[string]Nodes
-    Visitors2            map[string]Nodes
-    NetflowBandwidth     Nodes
-    LiveThreatsChart     map[string]Nodes
-    LiveReqsChart        map[string]Nodes
-    LiveCacheChart       map[string]Nodes
-    LiveLegitimatedChart map[string]Nodes
-    LiveUpstreamChart    map[string]Nodes
+type Report0 struct {
+    Pageviews2           map[string]Nodes0
+    Visitors2            map[string]Nodes0
+    NetflowBandwidth     Nodes0
+    LiveThreatsChart     map[string]Nodes0
+    LiveReqsChart        map[string]Nodes0
+    LiveCacheChart       map[string]Nodes0
+    LiveLegitimatedChart map[string]Nodes0
+    LiveUpstreamChart    map[string]Nodes0
 }
 
 type JsonType struct {

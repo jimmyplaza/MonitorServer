@@ -9,10 +9,10 @@ import (
 	"code.google.com/p/gcfg"
 	"log"
 	"time"
-	"net"
-	"net/http"
-	"io/ioutil"
-	"crypto/tls"
+	//"net"
+	//"net/http"
+	//"io/ioutil"
+	//"crypto/tls"
 	"encoding/json"
 )
 
@@ -105,6 +105,7 @@ func WriteToSyslog(level int, remote string, msg string) {
 
 
 
+/*
 func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
 	return func(netw, addr string) (net.Conn, error) {
 		conn, err := net.DialTimeout(netw, addr, cTimeout)
@@ -115,7 +116,9 @@ func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c 
 		return conn, nil
 	}
 }
+*/
 
+/*
 func HttpsGet(url string, funcName string) (rspcontent []byte, err error) {
 	var myClient = &http.Client{
 		Transport: &http.Transport{
@@ -139,7 +142,7 @@ func HttpsGet(url string, funcName string) (rspcontent []byte, err error) {
 	//rspstring = string(contents)
 	return rspcontents, nil
 }
-
+*/
 
 func CheckDir() {
         _, err := os.Stat("./log")
@@ -178,7 +181,6 @@ func CheckToken(token string) bool {
         }
         return true
 }
-
 */
 func LogMessage(msg string,level int){
         timeStr := time.Now().Format("2006-01-02 15:04:05")
@@ -292,5 +294,3 @@ func main() {
 	fmt.Println(retStr)
 }
 */
-
-
