@@ -993,6 +993,14 @@ func main() {
 		}
 		os.Exit(0)
 	*/
+
+	/*
+		go DnsCheck()
+		for {
+			time.Sleep(60 * time.Second)
+		}
+		os.Exit(0)
+	*/
 	SmtpServer = cfg.Mail.SmtpServer
 	Port = cfg.Mail.Port
 	From = cfg.Mail.From
@@ -1002,9 +1010,10 @@ func main() {
 	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
 	go MonitorG2Server(Url, IntervalSeconds, To1)
 
+	go DnsCheck()
+
 	go CheckCacheRatio()
 
-	go DnsCheck()
 	// ===================== Customer Site ===================
 	IntervalSeconds2 := cfg.MonitorCustomerSite.IntervalSeconds
 	go MonitorCustomerServer(allCustomerSite, IntervalSeconds2, To1)
