@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-type item interface {
+type Item interface {
 	Do(chl chan bool)
 	GetJSON() ([]byte, error)
 	GetChartPath() (string, error)
@@ -52,16 +52,22 @@ func (ttc *TopThreatsCountryItem) Do(c chan bool) {
 	go dataSource.Get(url, chl)
 	rspcontent := <-chl
 	//Get CW API ------------------------------------------------
-
+	//fmt.Println(string(rspcontent))
 	err := json.Unmarshal(rspcontent, &ttc.TopThreatsCountryDataSource) //store CW API result structure at ttc.TopThreatsCountryDataSource
 	if err != nil {
 		fmt.Println("[TopThreatsCountryItem] Do() Unmarshal Error: ", err)
 		return
 	}
+
 	topCountryList := ttc.CddWAFCountryRangeList
+	if len(topCountryList) == 0 {
+		fmt.Println("[TopThreatsCountryItem] Do() Empty API content")
+		c <- false
+		return
+	}
 	var val_sum float64
 	var rest_sum float64
-	color_arr := []string{"#c4de96", "#94bf4f", "#4fa8a1", "#266660", "#9b9887"}
+	color_arr := []string{"#BED693", "#8FB751", "#4EA19B", "#26645E", "#052F33"}
 
 	for i, val := range topCountryList {
 		val_sum = val_sum + val[1].(float64)
@@ -85,13 +91,13 @@ func (ttc *TopThreatsCountryItem) Do(c chan bool) {
 	/*Others Country*/
 	if totalcountry >= 5 {
 		ttc.pie[5].Value = rest_sum
-		ttc.pie[5].Color = "#FDB45C" //Yellow
+		ttc.pie[5].Color = "#928858" //Other Color
 		ttc.pie[5].Highlight = ""
 		ttc.pie[5].Lable = "Others"
 		tmp := (rest_sum / val_sum) * 100
 		ttc.pie[5].Percentage = fmt.Sprintf("%.2f", tmp)
 	}
-	//---------------------
+	//-------------//
 	c <- true
 }
 
@@ -100,7 +106,8 @@ func (ttc *TopThreatsCountryItem) GetJSON() ([]byte, error) {
 }
 
 func (ttc *TopThreatsCountryItem) GetChartPath() (string, error) {
-	root_url := "http://130.211.243.7:3000"
+	//root_url := "http://130.211.243.7:3000"
+	root_url := "http://gcptools.nexusguard.com:3000"
 	url := root_url + "/chart/pd/"
 
 	var (

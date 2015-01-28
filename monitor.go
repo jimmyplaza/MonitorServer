@@ -12,18 +12,18 @@ import (
 
 	"code.google.com/p/gcfg"
 
+	"net"
+
 	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
-	//"os"
 
-	"os/exec"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 	//"net/url"
-	//"net"
+
 	//"bytes"
 )
 
@@ -558,22 +558,6 @@ func ConfigInit() {
 	//customer.mu.Unlock()
 }
 
-func exe_cmd(cmd string, wg *sync.WaitGroup) (output string) {
-	fmt.Println("command is ", cmd)
-	// splitting head => g++ parts => rest of the command
-	parts := strings.Fields(cmd)
-	head := parts[0]
-	parts = parts[1:len(parts)]
-
-	out, err := exec.Command(head, parts...).Output()
-	if err != nil {
-		fmt.Printf("%s", err)
-	}
-	output = fmt.Sprintf("%s", out)
-	wg.Done() // Need to signal to waitgroup that this goroutine is done
-	return output
-}
-
 func CheckCacheRatio() {
 
 	var myClient = &http.Client{
@@ -658,11 +642,12 @@ func DnsCheck() {
 	IntervalSeconds := cfg.DnsCheck.IntervalSeconds
 	FilterCustomerList := cfg.DnsCheck.FilterCustomer
 	visitedURL := make(map[string]bool)
+	var currentip string
 	for _, site := range FilterCustomerList {
 		visitedURL[site] = true
 	}
 
-	wg := new(sync.WaitGroup)
+	//wg := new(sync.WaitGroup)
 	dnsSite.List = make(map[string]string)
 	jj := JsonDnsType{}
 	for {
@@ -675,11 +660,21 @@ func DnsCheck() {
 			//DomainList := customer.List[i].DomainList
 			//fmt.Println(DomainList)
 			for _, site := range SiteAlias {
-				wg.Add(1)
+				//wg.Add(1)
 				//go exe_cmd(str, wg)
-				cmdstr := "dig +short " + site
+				//cmdstr := "dig +short " + site
+				//fmt.Println(site)
+				ip, err := net.LookupIP(site)
+				if err != nil {
+					fmt.Println("net.LookupIP error: ", err.Error())
+					continue
+				}
+				if len(ip) != 0 {
+					currentip = ip[0].String()
+				}
 				//fmt.Println("Domain: ", DomainList[i])
-				currentip := exe_cmd(cmdstr, wg)
+
+				//currentip := exe_cmd(cmdstr, wg)
 				jj.Site = site
 				if currentip != "" {
 					fmt.Println(currentip)
@@ -789,15 +784,15 @@ func GetStatistic(obj [][]interface{}) (min, max, avg float64) {
 }
 
 type Report struct {
-	items []item
+	items []Item
 }
 
-func (r *Report) registerItem(i item) {
+func (r *Report) registerItem(i Item) {
 	r.items = append(r.items, i)
 }
 
 func (r *Report) start() {
-	var it item
+	var it Item
 	for i, l := 0, len(r.items); i < l; i++ {
 		it = r.items[i]
 		chl := make(chan bool)
@@ -814,9 +809,7 @@ func (r *Report) start() {
 }
 
 func ChooseCustomer(tmpurl string, MonitorList []string) (url_arr []string, mail_title []string) {
-
 	report := Report{}
-
 	MonitorArray := make(map[string]bool)
 	for _, MoAlias := range MonitorList {
 		MonitorArray[MoAlias] = true
@@ -828,11 +821,6 @@ func ChooseCustomer(tmpurl string, MonitorList []string) (url_arr []string, mail
 			//fmt.Println(MoAlias)
 			for s, SId := range customer.List[i].SiteList {
 				//Top 5 threats country pie chart
-				var topThreatsCountry TopThreatsCountryItem
-				topThreatsCountry.csmobj.CId = CId
-				topThreatsCountry.csmobj.SId = SId
-				topThreatsCountry.csmobj.Length = "30"
-				report.registerItem(&topThreatsCountry)
 
 				urlstr := fmt.Sprintf(tmpurl, CId, SId)
 				//fmt.Println(urlstr)
@@ -873,7 +861,7 @@ func GetReport() {
 	//url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
 		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
-		if Now == CheckTime { //15:59
+		if Now == CheckTime { //23:59
 			//if 1 == 1 {
 			//Total Sum
 			//for i, url := range sum_url_arr {
@@ -881,9 +869,31 @@ func GetReport() {
 				var cidcontent string
 				CId := customer.List[i].MoId
 				MoAlias := customer.List[i].MoAlias
+				fmt.Println("Customer********", MoAlias)
 				if MonitorArray[MoAlias] == true {
 					for s, SId := range customer.List[i].SiteList {
+						fmt.Println("       Site------->", customer.List[i].SiteAliasList[s])
 						var sidcontent string
+						var topThreatsCountry TopThreatsCountryItem
+						var piechart string
+						var pie_html string
+						topThreatsCountry.csmobj.CId = CId
+						topThreatsCountry.csmobj.SId = SId
+						topThreatsCountry.csmobj.Length = "30"
+						chl := make(chan bool)
+						go topThreatsCountry.Do(chl)
+						result := <-chl
+						if result {
+							if data, err := topThreatsCountry.GetChartPath(); err != nil {
+								fmt.Println(err)
+							} else {
+								if *debug {
+									fmt.Println(string(data))
+								}
+								pie_html = "<div><h1>Top Attack Country</h1><br><img src=%s></div>"
+								piechart = fmt.Sprintf(pie_html, string(data))
+							}
+						}
 						sum_url := fmt.Sprintf(sum_tmp_url, CId, SId)
 
 						content, err := HttpsGet(sum_url, "GetReport")
@@ -943,7 +953,9 @@ func GetReport() {
 							"Legitimated: " + humanize.Comma(int64(Legitimated)) + "  (requests)<br>" +
 							"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
 							"Serve by origin: " + humanize.Comma(int64(Upstream)) + "  (requests)<br>" +
-							"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic
+							"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic +
+							"<br><br>" + piechart
+
 						cidcontent = cidcontent + "<br><br>" + sidcontent
 					} // for SID
 					Title := "[Report] " + MoAlias
@@ -985,7 +997,6 @@ func main() {
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
-
 	/*
 		GetReport()
 		for {
@@ -994,13 +1005,6 @@ func main() {
 		os.Exit(0)
 	*/
 
-	/*
-		go DnsCheck()
-		for {
-			time.Sleep(60 * time.Second)
-		}
-		os.Exit(0)
-	*/
 	SmtpServer = cfg.Mail.SmtpServer
 	Port = cfg.Mail.Port
 	From = cfg.Mail.From
