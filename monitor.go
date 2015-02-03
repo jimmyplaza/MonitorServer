@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"code.google.com/p/gcfg"
 
@@ -137,7 +138,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 					ToJ[0] = "jimmy.ko@nexusguard.com"
 					Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
 					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-					MorningMail(SmtpServer, Port, From, ToJ, Title, Body)
+					SendHTMLMail(SmtpServer, Port, From, ToJ, Title, Body)
 					continue
 				}
 				if strings.Index(errMsg, "EOF") != -1 {
@@ -154,7 +155,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 							GMonitorAudio(prd, uat)
 						}
 					}
-					MorningMail(SmtpServer, Port, From, To, Title, Body)
+					SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 					WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
 					flag_arr[flag_idx] = true
 				}
@@ -172,7 +173,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 							uat := "0"
 							GMonitorAudio(prd, uat)
 						}
-						MorningMail(SmtpServer, Port, From, To, Title, Body)
+						SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 					}
 					flag_arr[flag_idx] = false
 					WriteToLogFile(url, "ALIVE", responseTime, filepath1)
@@ -182,7 +183,7 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 					if flag_arr[flag_idx] == false {
 						Title := "[G2Monitor]x [G2][Problem] - " + url
 						Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-						MorningMail(SmtpServer, Port, From, To, Title, Body)
+						SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 						WriteToLogFile(url, "SENT MAIL", responseTime, filepath1)
 						flag_arr[flag_idx] = true
 					}
@@ -380,7 +381,7 @@ func MonitorBandwidth() {
 				fmt.Println(m)
 				for i := 0; i < len(m); i++ {
 					if m[i] == 0 {
-						MorningMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
+						SendHTMLMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
 						//WriteToSyslog(0,"Monitor",errMsg[u])
 						//SendMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u], rspStatus)
 					}
@@ -504,7 +505,7 @@ func MonitorDataCenter(seconds int, To []string) {
 										//SendMail(SmtpServer, Port, From, To, url, errMsg, rspStatus)
 										Title := "[G2Monitor] - " + "[Data Center]: " + url
 										Body := Title + "<br>" + errMsg
-										MorningMail(SmtpServer, Port, From, To, Title, Body)
+										SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 									} else {
 										allsite.List[CId][SId][t].CenterCount = m["DataCenter"][t].CenterCount
 										Msg := "[Normal][" + customer.List[i].MoAlias + "]" + " -  " + "[" + customer.List[i].SiteAliasList[s] + "]" + " - " + allsite.List[CId][SId][t].CenterName + " DC" + " - [" + strconv.Itoa(m["DataCenter"][t].CenterCount) + "]"
@@ -623,13 +624,13 @@ func CheckCacheRatio() {
 				if CacheRatio < CacheRatioBound {
 					Title := "[G2Monitor] - " + "[Cache Ratio]" + errMsg[u] + " Cache rate abnormal!"
 					Body := errMsg[u] + "<br>Current ratio: " + ratio + "%" + "(current trigger level is < " + strconv.Itoa(CacheRatioBound) + "%)"
-					MorningMail(SmtpServer, Port, From, To, Title, Body)
+					SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 				}
 				a := (float64(Upstream) / float64(TotalRequest)) * 100
 				if a > 80 {
 					Title := "[G2Monitor] - " + "[Upstream & TotalRequest Ratio]" + errMsg[u] + " - Upstream & Total Request variation more than 80%"
 					Body := errMsg[u] + "<br>Upstream/Total Request ratio: " + strconv.FormatFloat(a, 'g', 2, 64) + "%"
-					MorningMail(SmtpServer, Port, From, To, Title, Body)
+					SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 				}
 			}
 		}
@@ -702,7 +703,7 @@ func DnsCheck() {
 							jj.Change = 1 //CHANGE
 							Title := "[G2Monitor] - " + "[DNS CHANGE]" + "[" + CustomerName + "] -" + site + " DNS IP change!"
 							Body := "[" + CustomerName + "] -" + site + " from " + dnsSite.List[site] + " change to " + currentip
-							MorningMail(SmtpServer, Port, From, To, Title, Body)
+							SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 						}
 						dnsSite.List[site] = currentip
 					}
@@ -763,7 +764,7 @@ func MonitorVariation(CheckTime string) {
 		To4 := cfg.CheckVariation.To
 		Title := "[G2Monitor] - " + "[AAH] - Legitimate & Served by origin variation"
 		Body := "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
-		MorningMail(SmtpServer, Port, From, To4, Title, Body)
+		SendHTMLMail(SmtpServer, Port, From, To4, Title, Body)
 	}
 }
 
@@ -783,6 +784,7 @@ func GetStatistic(obj [][]interface{}) (min, max, avg float64) {
 	return min, max, avg
 }
 
+/*
 type Report struct {
 	items []Item
 }
@@ -807,7 +809,7 @@ func (r *Report) start() {
 		}
 	}
 }
-
+*/
 func ChooseCustomer(tmpurl string, MonitorList []string) (url_arr []string, mail_title []string) {
 	report := Report{}
 	MonitorArray := make(map[string]bool)
@@ -837,7 +839,7 @@ func ChooseCustomer(tmpurl string, MonitorList []string) (url_arr []string, mail
 
 func GetReport() {
 	funcname := "GetReport"
-	CheckTime := cfg.GetReport.CheckTime
+	//CheckTime := cfg.GetReport.CheckTime
 	To := cfg.GetReport.To
 	ReportList := cfg.GetReport.ReportList
 	//IntervalSeconds := cfg.GetReport.IntervalSeconds
@@ -860,9 +862,9 @@ func GetReport() {
 
 	//url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&length=30&type=OnlineUser,AvgPage,cddInfoData,Netflow,SiteSpeed"
 	for {
-		Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
-		if Now == CheckTime { //23:59
-			//if 1 == 1 {
+		//Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
+		//if Now == CheckTime { //23:59
+		if 1 == 1 {
 			//Total Sum
 			//for i, url := range sum_url_arr {
 			for i, _ := range customer.List {
@@ -875,25 +877,49 @@ func GetReport() {
 						fmt.Println("       Site------->", customer.List[i].SiteAliasList[s])
 						var sidcontent string
 						var topThreatsCountry TopThreatsCountryItem
-						var piechart string
-						var pie_html string
+						var dcItem DataCenterItem
+
+						var piechart_topthreat string
+						var piechart_dc string
+						report := Report{}
 						topThreatsCountry.csmobj.CId = CId
 						topThreatsCountry.csmobj.SId = SId
 						topThreatsCountry.csmobj.Length = "30"
-						chl := make(chan bool)
-						go topThreatsCountry.Do(chl)
-						result := <-chl
-						if result {
-							if data, err := topThreatsCountry.GetChartPath(); err != nil {
-								fmt.Println(err)
-							} else {
-								if *debug {
-									fmt.Println(string(data))
-								}
-								pie_html = "<div><h1>Top Attack Country</h1><br><img src=%s></div>"
-								piechart = fmt.Sprintf(pie_html, string(data))
+						dcItem.csmobj.CId = CId
+						dcItem.csmobj.SId = SId
+						dcItem.csmobj.Length = "30"
+						report.registerItem(&topThreatsCountry)
+						report.registerItem(&dcItem)
+						arr := report.start()
+						fmt.Println("len: ", len(arr))
+						for i, val := range arr {
+							if i == 0 {
+								fmt.Println("00000000000")
+								fmt.Println(val)
+								piechart_topthreat = fmt.Sprintf("<div><h2>Top Attack Country</h2><br><img src=%s></div>", val)
+							}
+							if i == 1 {
+								fmt.Println("11111111111")
+								fmt.Println(val)
+								piechart_dc = fmt.Sprintf("<div><h2>Data Center / Request Overview</h2><br><img src=%s></div>", val)
 							}
 						}
+						/*
+							chl := make(chan bool)
+							go topThreatsCountry.Do(chl)
+							result := <-chl
+							if result {
+								if data, err := topThreatsCountry.GetChartPath(); err != nil {
+									fmt.Println(err)
+								} else {
+									if *debug {
+										fmt.Println(string(data))
+									}
+									pie_html = "<div><h1>Top Attack Country</h1><br><img src=%s></div>"
+									piechart = fmt.Sprintf(pie_html, string(data))
+								}
+							}
+						*/
 						sum_url := fmt.Sprintf(sum_tmp_url, CId, SId)
 
 						content, err := HttpsGet(sum_url, "GetReport")
@@ -942,7 +968,8 @@ func GetReport() {
 							"<br>Serve by origin max: " + humanize.Comma(int64(LiveReportOut.Upstream_max)) + "  (request per min)" +
 							"<br>Serve by origin avg: " + humanize.Comma(int64(LiveReportOut.Upstream_avg)) + "  (request per min)"
 
-						sidcontent = customer.List[i].SiteAliasList[s] + "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
+						sitetitle := "<h1>" + customer.List[i].SiteAliasList[s] + "</h1>"
+						sidcontent = sitetitle + "<br>SUMMARY TODAY: <br>OnlineUser: " + humanize.Comma(int64(OnlineUser)) + "<br>" +
 							"Pageviews: " + humanize.Comma(int64(Pageviews)) + "<br>" +
 							"Visitors: " + humanize.Comma(int64(Visitors)) + "<br>" +
 							"Threats: " + humanize.Comma(int64(Threats)) + "  (requests)<br>" +
@@ -954,13 +981,16 @@ func GetReport() {
 							"CacheRatio: " + humanize.Comma(int64(CacheRatio)) + "%<br>" +
 							"Serve by origin: " + humanize.Comma(int64(Upstream)) + "  (requests)<br>" +
 							"SiteSpeed: " + humanize.Comma(int64(SiteSpeed)) + " ms" + liveStatistic +
-							"<br><br>" + piechart
+							"<br><br>" + piechart_topthreat +
+							"<br><br>" + piechart_dc
 
 						cidcontent = cidcontent + "<br><br>" + sidcontent
+						fmt.Println("---------------------------------------------------------------")
 					} // for SID
 					Title := "[Report] " + MoAlias
 					Body := cidcontent
-					MorningMail(SmtpServer, Port, From, To, Title, Body)
+					SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
+					os.Exit(0)
 				} // if Monitor == true
 			} // for CID
 		} //if Now == CheckTime
@@ -997,17 +1027,17 @@ func main() {
 	customer = &Customers{mu: &sync.Mutex{}}
 	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
 	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
-	/*
-		GetReport()
-		for {
-			time.Sleep(60 * time.Second)
-		}
-		os.Exit(0)
-	*/
 
+	/*GetReport()
+	for {
+		time.Sleep(60 * time.Second)
+	}
+	os.Exit(0)
+	*/
 	SmtpServer = cfg.Mail.SmtpServer
 	Port = cfg.Mail.Port
 	From = cfg.Mail.From
+
 	To1 := cfg.Monitorg2.To
 	// ===================== G2 component Site ===================
 	Url := cfg.Monitorg2.Site
@@ -1032,7 +1062,7 @@ func main() {
 	CheckTime := cfg.CheckVariation.CheckTime
 	for {
 		MonitorVariation(CheckTime)
-		GetReport()
+		//GetReport()
 		time.Sleep(60 * time.Second)
 	}
 

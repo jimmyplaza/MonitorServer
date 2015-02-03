@@ -1,97 +1,61 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"sort"
-	"strings"
-	"time"
+	//"runtime"
 )
 
-type JsonLiveReportType struct {
-	Timestamp            string `json:"@timestamp"`
-	Threats_min          int    `json:"threats_min"`
-	Threats_max          int    `json:"threats_max"`
-	Threats_avg          int    `json:"threats_avg"`
-	NetflowBandwidth_min int    `json:"netflowBandwidth_min"`
-	NetflowBandwidth_max int    `json:"netflowBandwidth_max"`
-	NetflowBandwidth_avg int    `json:"netflowBandwidth_avg"`
-	LiveReqsChart_min    int    `json:"liveReqsChart_min"`
-	LiveReqsChart_max    int    `json:"liveReqsChart_max"`
-	LiveReqsChart_avg    int    `json:"liveReqsChart_avg"`
-	CacheHit_min         int    `json:"cacheHit_min"`
-	CacheHit_max         int    `json:"cacheHit_max"`
-	CacheHit_avg         int    `json:"cacheHit_avg"`
-	Legitimated_min      int    `json:"legitimated_min"`
-	Legitimated_max      int    `json:"legitimated_min"`
-	Legitimated_avg      int    `json:"legitimated_min"`
-	Upstream_min         int    `json:"upstream_min"`
-	Upstream_max         int    `json:"upstream_max"`
-	Upstream_avg         int    `json:"upstream_avg"`
+type Report struct {
+	items []Item
 }
 
-func (n Nodes0) GetMinMaxAvg() (min, max, avg int) {
-	intArray := []int{}
-	var sum int
-	for _, val := range n {
-		v := val[1]
-		sum = sum + v
-		intArray = append(intArray, v)
-	}
-	sort.Ints(intArray)
-	arr_len := len(intArray)
-	avg = sum / arr_len
-	min = intArray[0]
-	max = intArray[arr_len-1]
-	return min, max, avg
+func (r *Report) registerItem(i Item) {
+	r.items = append(r.items, i)
 }
 
-//func GetLiveReport(cid, sid, length string) (out JsonLiveReportType) {
-func GetLiveReport(url string) (out JsonLiveReportType) {
-	var report Report0
-	funcname := "GetReport"
-	//tmp_url := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&length=%s&site_id=%s&type=Pageviews2,Visitors2,NetflowBandwidth,liveThreatsChart,liveReqsChart,liveCacheChart,liveLegitimatedChart,liveUpstreamChart"
-	//url := fmt.Sprintf(tmp_url, cid, length, sid)
-
-	content, err := HttpsGet(url, funcname)
-	if err != nil {
-		fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
-		return
+func (r *Report) start() (arr []string) {
+	var it Item
+	for i, l := 0, len(r.items); i < l; i++ {
+		it = r.items[i]
+		chl := make(chan bool)
+		go it.Do(chl)
+		result := <-chl
+		fmt.Println(result)
+		if result {
+			if data, err := it.GetChartPath(); err != nil {
+				fmt.Println("JJJJJJJJJJJJJIMMMMMMMMM")
+				fmt.Println(err)
+			} else {
+				//fmt.Println(string(data))
+				arr = append(arr, string(data))
+			}
+		}
 	}
-	err = json.Unmarshal(content, &report)
-	if err != nil {
-		fmt.Println("Error: [%s]: json.Unmarshal-> %v", funcname, err.Error())
-		return
+	return arr
+}
+
+/*
+func main() {
+	cpunum := runtime.NumCPU()
+	runtime.GOMAXPROCS(cpunum)
+
+	report := Report{}
+	var topThreatsCountry TopThreatsCountryItem
+	var dcItem DataCenterItem
+	topThreatsCountry.csmobj.CId = "C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb"
+	topThreatsCountry.csmobj.SId = "S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d"
+	topThreatsCountry.csmobj.Length = "30"
+
+	dcItem.csmobj.CId = "C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb"
+	dcItem.csmobj.SId = "S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d"
+	dcItem.csmobj.Length = "30"
+
+	report.registerItem(&topThreatsCountry)
+	report.registerItem(&dcItem)
+	arr := report.start()
+	for _, val := range arr {
+		fmt.Println(val)
 	}
-	Threats_min, Threats_max, Threats_avg := report.LiveThreatsChart["Threats"].GetMinMaxAvg()
-	NetflowBandwidth_min, NetflowBandwidth_max, NetflowBandwidth_avg := report.NetflowBandwidth[:len(report.NetflowBandwidth)-2].GetMinMaxAvg()
-	LiveReqsChart_min, LiveReqsChart_max, LiveReqsChart_avg := report.LiveReqsChart["Reqs"].GetMinMaxAvg()
-	CacheHit_min, CacheHit_max, CacheHit_avg := report.LiveCacheChart["CacheHit"].GetMinMaxAvg()
-	Legitimated_min, Legitimated_max, Legitimated_avg := report.LiveLegitimatedChart["Legitimated"].GetMinMaxAvg()
-	Upstream_min, Upstream_max, Upstream_avg := report.LiveUpstreamChart["Upstream"].GetMinMaxAvg()
-
-	curtime := fmt.Sprintf("%s", time.Now().Format("2006-01-02 15:04:05"))
-	curtime = strings.Replace(curtime, " ", "T", 1)
-
-	out.Timestamp = curtime
-	out.Threats_min = Threats_min
-	out.Threats_max = Threats_max
-	out.Threats_avg = Threats_avg
-	out.NetflowBandwidth_min = NetflowBandwidth_min
-	out.NetflowBandwidth_max = NetflowBandwidth_max
-	out.NetflowBandwidth_avg = NetflowBandwidth_avg
-	out.LiveReqsChart_min = LiveReqsChart_min
-	out.LiveReqsChart_max = LiveReqsChart_max
-	out.LiveReqsChart_avg = LiveReqsChart_avg
-	out.CacheHit_min = CacheHit_min
-	out.CacheHit_max = CacheHit_max
-	out.CacheHit_avg = CacheHit_avg
-	out.Legitimated_min = Legitimated_min
-	out.Legitimated_max = Legitimated_max
-	out.Legitimated_avg = Legitimated_avg
-	out.Upstream_min = Upstream_min
-	out.Upstream_max = Upstream_max
-	out.Upstream_avg = Upstream_avg
-	return out
 
 }
+*/

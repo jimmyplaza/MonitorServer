@@ -54,10 +54,12 @@ type JsonReportType struct {
 	SiteSpeed     int    `json:"sitespeed"`
 }
 
+/*
 type DCObject struct {
 	CenterName  string
 	CenterCount int
 }
+*/
 type AllSite struct {
 	List map[string]map[string][]DCObject
 }
@@ -113,6 +115,7 @@ type cfgObject struct {
 		SmtpServer string
 		Port       string
 		From       string
+		Password   string
 	}
 	G2Server map[string]*struct {
 		To []string
