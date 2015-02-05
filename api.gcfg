@@ -1,7 +1,3 @@
-[g2server "http://gcptools.nexusguard.com:2999"]
-To = jimmy.ko@nexusguard.com
-To = eric.kuo@nexusguard.com 
-
 [g2server "http://gcptools.nexusguard.com:3000"]
 To = jimmy.ko@nexusguard.com
 To = eric.kuo@nexusguard.com 
@@ -92,7 +88,6 @@ site = https://g2na2.nexusguard.com
 site = https://www.nexusguard.com
 site = https://portal.nexusguard.com
 site = https://g2tool.nexusguard.com:444
-site = http://gcptools.nexusguard.com:2999
 site = http://gcptools.nexusguard.com:3000
 
 ;site = https://g2portal.nexusguard.com
