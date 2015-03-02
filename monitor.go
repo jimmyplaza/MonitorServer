@@ -136,9 +136,9 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				errMsg = fmt.Sprintf("%s", err)
 				if strings.Index(errMsg, "timeout") != -1 {
 					ToJ[0] = "jimmy.ko@nexusguard.com"
-					Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
-					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-					SendHTMLMail(SmtpServer, Port, From, ToJ, Title, Body)
+					//Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
+					//Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+					//SendHTMLMail(SmtpServer, Port, From, ToJ, Title, Body)
 					continue
 				}
 				if strings.Index(errMsg, "EOF") != -1 {
