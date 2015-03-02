@@ -312,7 +312,7 @@ func MonitorBandwidth() {
 	seconds := cfg.MonitorBand.IntervalSeconds
 	To := cfg.MonitorBand.To
 
-	var m []int
+	var m map[string][][]int
 	var url_arr []string
 	var errMsg []string
 	length := "5"
@@ -349,40 +349,25 @@ func MonitorBandwidth() {
 
 	for {
 		for u, url := range url_arr { //monitor all url at array
-			fmt.Println("url: " + url)
 			response, err := myClient.Get(url)
-			/*
-						if response != nil {
-				 		   //rspStatus = response.Status
-							rspStatus = ""
-				    	 	//rspCode = response.StatusCode
-						} else{
-							rspStatus = ""
-						}
-			*/
 			if err != nil {
 				fmt.Printf("%s", err)
 				continue
-				//os.Exit(1)
 			} else {
 				defer response.Body.Close()
 				contents, err := ioutil.ReadAll(response.Body)
 				if err != nil {
 					fmt.Printf("%s", err)
-					//os.Exit(1)
 					continue
 				}
 				err = json.Unmarshal(contents, &m)
 				if err != nil {
 					fmt.Println(err)
 				}
-				//m := b.([]interface{})
-				m = m[:3] //the last two value must be zero, trim
-				fmt.Println(m)
-				for i := 0; i < len(m); i++ {
-					if m[i] == 0 {
+				m2 := m["NetflowBandwidth"][:3] //the last two value must be zero, trim
+				for _, val := range m2 {
+					if val[1] == 0 {
 						SendHTMLMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
-						//WriteToSyslog(0,"Monitor",errMsg[u])
 						//SendMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u], rspStatus)
 					}
 				}
@@ -1042,6 +1027,10 @@ func main() {
 	// ===================== G2 component Site ===================
 	Url := cfg.Monitorg2.Site
 	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
+
+	//===================== Portal Customer Bandwidth ===================
+	go MonitorBandwidth()
+
 	go MonitorG2Server(Url, IntervalSeconds, To1)
 
 	go DnsCheck()
@@ -1051,9 +1040,6 @@ func main() {
 	// ===================== Customer Site ===================
 	IntervalSeconds2 := cfg.MonitorCustomerSite.IntervalSeconds
 	go MonitorCustomerServer(allCustomerSite, IntervalSeconds2, To1)
-
-	//===================== Portal Customer Bandwidth ===================
-	//go MonitorBandwidth()
 
 	// ==================== Portal DataCenter =======================
 	IntervalSeconds0 := cfg.MonitorDC.IntervalSeconds
