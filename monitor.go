@@ -311,19 +311,25 @@ func MonitorBandwidth() {
 	}
 	seconds := cfg.MonitorBand.IntervalSeconds
 	To := cfg.MonitorBand.To
+	FilterSiteList := cfg.MonitorBand.FilterSiteList
 
 	var m map[string][][]int
 	var url_arr []string
 	var errMsg []string
 	length := "5"
-	//var rspStatus string
-
-	//var b interface{}
-	//var rspCode int
 	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidth"
-	//tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidthHour"
-	//tmpurl := "https://g2api.nexusguard.com/API/NetflowBandwidth/2?cust_id="
 	tmperr := " has zero Bandwidth recent 10 minutes"
+	FilterSiteArray := make(map[string]bool)
+
+	for i, _ := range customer.List {
+		for _, site := range customer.List[i].SiteAliasList {
+			for _, filterSiteName := range FilterSiteList {
+				if filterSiteName == site {
+					FilterSiteArray[site] = true
+				}
+			}
+		}
+	}
 
 	for i, _ := range customer.List {
 		CId := customer.List[i].MoId
@@ -331,7 +337,11 @@ func MonitorBandwidth() {
 		for j, _ := range cfg.MonitorBand.MonitorList {
 			if MoAlias == cfg.MonitorBand.MonitorList[j] {
 				for s, SId := range customer.List[i].SiteList {
-					//urlstr := tmpurl + CId + "&length=5"
+					siteAlias := customer.List[i].SiteAliasList[s]
+					if FilterSiteArray[siteAlias] == true {
+						continue
+					}
+					fmt.Println(siteAlias)
 					urlstr := fmt.Sprintf(tmpurl, CId, SId, length)
 					url_arr = append(url_arr, urlstr)
 					errstr := "[Monitor Bandwidth]" + "[" + MoAlias + "] - " + customer.List[i].SiteAliasList[s] + tmperr
@@ -366,6 +376,7 @@ func MonitorBandwidth() {
 					fmt.Println(err)
 				}
 				m2 := m["NetflowBandwidth"][:3] //the last two value must be zero, trim
+				fmt.Println(m2)
 				for _, val := range m2 {
 					if val[1] == 0 {
 						SendHTMLMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
@@ -1031,6 +1042,10 @@ func main() {
 
 	//===================== Portal Customer Bandwidth ===================
 	go MonitorBandwidth()
+	// for {
+	// 	time.Sleep(60 * time.Second)
+	// }
+	// os.Exit(0)
 
 	go MonitorG2Server(Url, IntervalSeconds, To1)
 

@@ -127,6 +127,7 @@ type cfgObject struct {
 	}
 	MonitorBand struct {
 		MonitorList     []string
+		FilterSiteList     []string
 		IntervalSeconds int
 		SmtpServer      string
 		Port            string

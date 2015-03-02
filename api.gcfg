@@ -165,20 +165,22 @@ IntervalSeconds = 240
 monitorList = AAH
 monitorList = EDB
 monitorList = MDZ 
+
 ;monitorList = HTB 
 ;monitorList = HKOGCIO 
 ;monitorList = HKP 
+filterSiteList = www.monspacea.com.my
 
 IntervalSeconds = 120 
 SmtpServer = smtp.gmail.com
 Port = 465
 From = g2.service@nexusguard.com
 To = jimmy.ko@nexusguard.com
-To = chris.liu@nexusguard.com
-To = steve.tsai@nexusguard.com 
-To = matis.hsiao@nexusguard.com
-To = andy.shih@nexusguard.com
-To = kevin.chiu@nexusguard.com
+;To = chris.liu@nexusguard.com
+;To = steve.tsai@nexusguard.com 
+;To = matis.hsiao@nexusguard.com
+;To = andy.shih@nexusguard.com
+;To = kevin.chiu@nexusguard.com
 
 [monitorCustomerSite]
 IntervalSeconds = 120 
