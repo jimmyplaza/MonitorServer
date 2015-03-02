@@ -320,7 +320,8 @@ func MonitorBandwidth() {
 
 	//var b interface{}
 	//var rspCode int
-	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidthHour"
+	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidth"
+	//tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidthHour"
 	//tmpurl := "https://g2api.nexusguard.com/API/NetflowBandwidth/2?cust_id="
 	tmperr := " has zero Bandwidth recent 10 minutes"
 

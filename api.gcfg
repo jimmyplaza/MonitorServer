@@ -24,9 +24,11 @@ To = eric.kuo@nexusguard.com
 [g2server "https://g2api.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
+To = matis.hsiao@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = andy.shih@nexusguard.com
 To = kevin.chiu@nexusguard.com
+To = winky.wong@nexusguard.com 
 
 [g2server "https://g2api2.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -172,11 +174,11 @@ SmtpServer = smtp.gmail.com
 Port = 465
 From = g2.service@nexusguard.com
 To = jimmy.ko@nexusguard.com
-;To = chris.liu@nexusguard.com
-;To = steve.tsai@nexusguard.com 
-;To = matis.hsiao@nexusguard.com
-;To = andy.shih@nexusguard.com
-;To = kevin.chiu@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com 
+To = matis.hsiao@nexusguard.com
+To = andy.shih@nexusguard.com
+To = kevin.chiu@nexusguard.com
 
 [monitorCustomerSite]
 IntervalSeconds = 120 
