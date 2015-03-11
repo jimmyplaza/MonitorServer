@@ -133,7 +133,7 @@ To = jimmy.ko@nexusguard.com
 [checkcacheratio]
 IntervalSeconds = 1200 
 ;CacheRatioBound < 40 , alert
-CacheRatioBound = 40 
+CacheRatioBound = 19 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
@@ -176,11 +176,11 @@ SmtpServer = smtp.gmail.com
 Port = 465
 From = g2.service@nexusguard.com
 To = jimmy.ko@nexusguard.com
-;To = chris.liu@nexusguard.com
-;To = steve.tsai@nexusguard.com 
-;To = matis.hsiao@nexusguard.com
-;To = andy.shih@nexusguard.com
-;To = kevin.chiu@nexusguard.com
+To = chris.liu@nexusguard.com
+To = steve.tsai@nexusguard.com 
+To = matis.hsiao@nexusguard.com
+To = andy.shih@nexusguard.com
+To = kevin.chiu@nexusguard.com
 
 [monitorCustomerSite]
 IntervalSeconds = 120 
