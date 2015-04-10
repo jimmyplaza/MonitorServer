@@ -26,7 +26,6 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = matis.hsiao@nexusguard.com
 To = steve.tsai@nexusguard.com
-To = kevin.chiu@nexusguard.com
 To = winky.wong@nexusguard.com 
 
 [g2server "https://g2api2.nexusguard.com"] 
@@ -103,7 +102,6 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = matis.hsiao@nexusguard.com
-To = andy.shih@nexusguard.com
 
 [getreport]
 ;CheckTime = 15:59
@@ -117,15 +115,6 @@ ReportList = EDB
 ;ReportList = HKP 
 
 To = jimmy.ko@nexusguard.com
-;To = chris.liu@nexusguard.com
-;To = olive.ting@nexusguard.com
-;To = matis.hsiao@nexusguard.com
-;To = young.cheng@nexusguard.com
-;To = jean.lin@nexusguard.com
-;To = andy.shih@nexusguard.com
-;To = kevin.chiu@nexusguard.com
-;To = reggie.yam@nexusguard.com
-
 
 [checkcacheratio]
 IntervalSeconds = 1200 
@@ -147,7 +136,6 @@ To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = olive.ting@nexusguard.com
 To = matis.hsiao@nexusguard.com
-To = andy.shih@nexusguard.com
 
 [monitordc]
 ;Data Center
@@ -176,8 +164,6 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com 
 To = matis.hsiao@nexusguard.com
-To = andy.shih@nexusguard.com
-To = kevin.chiu@nexusguard.com
 
 [monitorCustomerSite]
 IntervalSeconds = 120 
