@@ -26,7 +26,6 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = matis.hsiao@nexusguard.com
 To = steve.tsai@nexusguard.com
-To = andy.shih@nexusguard.com
 To = kevin.chiu@nexusguard.com
 To = winky.wong@nexusguard.com 
 
@@ -46,8 +45,6 @@ To = matis.hsiao@nexusguard.com
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
-To = andy.shih@nexusguard.com
-To = kevin.chiu@nexusguard.com
 
 [g2server "https://g2na2.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -60,7 +57,6 @@ To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = matis.hsiao@nexusguard.com
-To = andy.shih@nexusguard.com
 
 [g2server "https://portal.nexusguard.com"]
 To = jimmy.ko@nexusguard.com
