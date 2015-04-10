@@ -78,7 +78,8 @@ To = matis.hsiao@nexusguard.com
 SmtpServer = smtp.gmail.com
 Port = 465
 From = g2.service@nexusguard.com
-Password = NxGdEv139
+;Password = NxGdEv139
+Password = vmsm9387
 
 [monitorg2]
 site = https://g2.nexusguard.com
