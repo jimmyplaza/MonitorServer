@@ -148,8 +148,8 @@ IntervalSeconds = 240
 [monitorband]
 ;Band Width
 monitorList = AAH
-monitorList = EDB
-monitorList = MDZ 
+;monitorList = EDB
+;monitorList = MDZ 
 
 ;monitorList = HTB 
 ;monitorList = HKOGCIO 
