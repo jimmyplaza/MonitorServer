@@ -1,7 +1,3 @@
-[g2server "http://gcptools.nexusguard.com:2999"]
-To = jimmy.ko@nexusguard.com
-To = eric.kuo@nexusguard.com 
-
 [g2server "http://gcptools.nexusguard.com:3000"]
 To = jimmy.ko@nexusguard.com
 To = eric.kuo@nexusguard.com 
@@ -28,9 +24,11 @@ To = eric.kuo@nexusguard.com
 [g2server "https://g2api.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
+To = matis.hsiao@nexusguard.com
 To = steve.tsai@nexusguard.com
 To = andy.shih@nexusguard.com
 To = kevin.chiu@nexusguard.com
+To = winky.wong@nexusguard.com 
 
 [g2server "https://g2api2.nexusguard.com"] 
 To = jimmy.ko@nexusguard.com
@@ -93,7 +91,6 @@ site = https://g2na2.nexusguard.com
 site = https://www.nexusguard.com
 site = https://portal.nexusguard.com
 site = https://g2tool.nexusguard.com:444
-site = http://gcptools.nexusguard.com:2999
 site = http://gcptools.nexusguard.com:3000
 
 ;site = https://g2portal.nexusguard.com
@@ -137,7 +134,7 @@ To = jimmy.ko@nexusguard.com
 [checkcacheratio]
 IntervalSeconds = 1200 
 ;CacheRatioBound < 40 , alert
-CacheRatioBound = 40 
+CacheRatioBound = 19 
 To = jimmy.ko@nexusguard.com
 To = chris.liu@nexusguard.com
 To = steve.tsai@nexusguard.com
@@ -167,9 +164,13 @@ IntervalSeconds = 240
 [monitorband]
 ;Band Width
 monitorList = AAH
-monitorList = HKP 
 monitorList = EDB
-monitorList = HKOGCIO 
+monitorList = MDZ 
+
+;monitorList = HTB 
+;monitorList = HKOGCIO 
+;monitorList = HKP 
+filterSiteList = www.monspacea.com.my
 
 IntervalSeconds = 120 
 SmtpServer = smtp.gmail.com

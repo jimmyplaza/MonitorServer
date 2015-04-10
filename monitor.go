@@ -136,9 +136,9 @@ func MonitorG2Server(Url []string, seconds int, Too []string) {
 				errMsg = fmt.Sprintf("%s", err)
 				if strings.Index(errMsg, "timeout") != -1 {
 					ToJ[0] = "jimmy.ko@nexusguard.com"
-					Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
-					Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
-					SendHTMLMail(SmtpServer, Port, From, ToJ, Title, Body)
+					//Title := "[G2Monitor] Only Jimmy(io timeout)- " + "[G2] - " + url + " - Status"
+					//Body := Title + "<br>" + "STATUS CODE: " + rspStatus + "<br>" + "ERROR: " + errMsg
+					//SendHTMLMail(SmtpServer, Port, From, ToJ, Title, Body)
 					continue
 				}
 				if strings.Index(errMsg, "EOF") != -1 {
@@ -311,18 +311,25 @@ func MonitorBandwidth() {
 	}
 	seconds := cfg.MonitorBand.IntervalSeconds
 	To := cfg.MonitorBand.To
+	FilterSiteList := cfg.MonitorBand.FilterSiteList
 
-	var m []int
+	var m map[string][][]int
 	var url_arr []string
 	var errMsg []string
 	length := "5"
-	//var rspStatus string
-
-	//var b interface{}
-	//var rspCode int
-	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidthHour"
-	//tmpurl := "https://g2api.nexusguard.com/API/NetflowBandwidth/2?cust_id="
+	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidth"
 	tmperr := " has zero Bandwidth recent 10 minutes"
+	FilterSiteArray := make(map[string]bool)
+
+	for i, _ := range customer.List {
+		for _, site := range customer.List[i].SiteAliasList {
+			for _, filterSiteName := range FilterSiteList {
+				if filterSiteName == site {
+					FilterSiteArray[site] = true
+				}
+			}
+		}
+	}
 
 	for i, _ := range customer.List {
 		CId := customer.List[i].MoId
@@ -330,7 +337,11 @@ func MonitorBandwidth() {
 		for j, _ := range cfg.MonitorBand.MonitorList {
 			if MoAlias == cfg.MonitorBand.MonitorList[j] {
 				for s, SId := range customer.List[i].SiteList {
-					//urlstr := tmpurl + CId + "&length=5"
+					siteAlias := customer.List[i].SiteAliasList[s]
+					if FilterSiteArray[siteAlias] == true {
+						continue
+					}
+					fmt.Println(siteAlias)
 					urlstr := fmt.Sprintf(tmpurl, CId, SId, length)
 					url_arr = append(url_arr, urlstr)
 					errstr := "[Monitor Bandwidth]" + "[" + MoAlias + "] - " + customer.List[i].SiteAliasList[s] + tmperr
@@ -349,40 +360,26 @@ func MonitorBandwidth() {
 
 	for {
 		for u, url := range url_arr { //monitor all url at array
-			fmt.Println("url: " + url)
 			response, err := myClient.Get(url)
-			/*
-						if response != nil {
-				 		   //rspStatus = response.Status
-							rspStatus = ""
-				    	 	//rspCode = response.StatusCode
-						} else{
-							rspStatus = ""
-						}
-			*/
 			if err != nil {
 				fmt.Printf("%s", err)
 				continue
-				//os.Exit(1)
 			} else {
 				defer response.Body.Close()
 				contents, err := ioutil.ReadAll(response.Body)
 				if err != nil {
 					fmt.Printf("%s", err)
-					//os.Exit(1)
 					continue
 				}
 				err = json.Unmarshal(contents, &m)
 				if err != nil {
 					fmt.Println(err)
 				}
-				//m := b.([]interface{})
-				m = m[:3] //the last two value must be zero, trim
-				fmt.Println(m)
-				for i := 0; i < len(m); i++ {
-					if m[i] == 0 {
+				m2 := m["NetflowBandwidth"][:3] //the last two value must be zero, trim
+				fmt.Println(m2)
+				for _, val := range m2 {
+					if val[1] == 0 {
 						SendHTMLMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
-						//WriteToSyslog(0,"Monitor",errMsg[u])
 						//SendMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u], rspStatus)
 					}
 				}
@@ -1042,6 +1039,14 @@ func main() {
 	// ===================== G2 component Site ===================
 	Url := cfg.Monitorg2.Site
 	IntervalSeconds := cfg.Monitorg2.IntervalSeconds
+
+	//===================== Portal Customer Bandwidth ===================
+	go MonitorBandwidth()
+	// for {
+	// 	time.Sleep(60 * time.Second)
+	// }
+	// os.Exit(0)
+
 	go MonitorG2Server(Url, IntervalSeconds, To1)
 
 	go DnsCheck()
@@ -1051,9 +1056,6 @@ func main() {
 	// ===================== Customer Site ===================
 	IntervalSeconds2 := cfg.MonitorCustomerSite.IntervalSeconds
 	go MonitorCustomerServer(allCustomerSite, IntervalSeconds2, To1)
-
-	//===================== Portal Customer Bandwidth ===================
-	//go MonitorBandwidth()
 
 	// ==================== Portal DataCenter =======================
 	IntervalSeconds0 := cfg.MonitorDC.IntervalSeconds
