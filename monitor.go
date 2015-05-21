@@ -636,7 +636,7 @@ func CheckCacheRatio() {
 }
 
 func DnsCheck() {
-	To := cfg.DnsCheck.To
+	//To := cfg.DnsCheck.To
 	IntervalSeconds := cfg.DnsCheck.IntervalSeconds
 	FilterCustomerList := cfg.DnsCheck.FilterCustomer
 	visitedURL := make(map[string]bool)
@@ -698,9 +698,9 @@ func DnsCheck() {
 								}*/
 						} else {
 							jj.Change = 1 //CHANGE
-							Title := "[G2Monitor] - " + "[DNS CHANGE]" + "[" + CustomerName + "] -" + site + " DNS IP change!"
-							Body := "[" + CustomerName + "] -" + site + " from " + dnsSite.List[site] + " change to " + currentip
-							SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
+							//Title := "[G2Monitor] - " + "[DNS CHANGE]" + "[" + CustomerName + "] -" + site + " DNS IP change!"
+							//Body := "[" + CustomerName + "] -" + site + " from " + dnsSite.List[site] + " change to " + currentip
+							//SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
 						}
 						dnsSite.List[site] = currentip
 					}
