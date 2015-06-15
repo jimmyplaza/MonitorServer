@@ -755,13 +755,13 @@ DCenter:         @timestamp, normal/error,  [MoAlias], Site, DC
 func MonitorVariation(CheckTime string) {
 	Now := fmt.Sprintf("%s", time.Now().Format("15:04"))
 	if Now == CheckTime {
-		//a, b := CheckVariation()
-		//ReqRatio := strconv.FormatFloat(a, 'g', 2, 64)
-		//LegRatio := strconv.FormatFloat(b, 'g', 2, 64)
-		//To4 := cfg.CheckVariation.To
-		//Title := "[G2Monitor] - " + "[AAH] - Legitimate & Served by origin variation"
-		//Body := "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
-		//SendHTMLMail(SmtpServer, Port, From, To4, Title, Body)
+		a, b := CheckVariation()
+		ReqRatio := strconv.FormatFloat(a, 'g', 2, 64)
+		LegRatio := strconv.FormatFloat(b, 'g', 2, 64)
+		To4 := cfg.CheckVariation.To
+		Title := "[G2Monitor] - " + "[AAH] - Legitimate & Served by origin variation"
+		Body := "(AAH)Legitimate variation: " + ReqRatio + "<br>Served by origin variation: " + LegRatio
+		SendHTMLMail(SmtpServer, Port, From, To4, Title, Body)
 	}
 }
 
@@ -1061,12 +1061,14 @@ func main() {
 	IntervalSeconds0 := cfg.MonitorDC.IntervalSeconds
 	go MonitorDataCenter(IntervalSeconds0, To1)
 
+/*
 	CheckTime := cfg.CheckVariation.CheckTime
 	for {
-		MonitorVariation(CheckTime)
+		//MonitorVariation(CheckTime)
 		//GetReport()
 		time.Sleep(60 * time.Second)
 	}
+*/
 
 	//var cfg Config  //for main internal use only, has another Global cfg object
 	//var Url string
