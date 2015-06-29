@@ -13,6 +13,7 @@ import (
 
 	"code.google.com/p/gcfg"
 
+	cust "ClearWatch2/libs/customer"
 	"net"
 
 	"github.com/dustin/go-humanize"
@@ -29,12 +30,12 @@ import (
 )
 
 var debug *bool
-var syslogSender *SyslogSender
 var filepath1 string = "./log/"
 var filepath2 string = "./csmlog/"
 var cfg cfgObject //at types.go
 var dcobj DCObject
 var configFile = flag.String("c", "api.gcfg", "config filename")
+
 var customer *Customers
 var allsite AllSite
 var allCustomerSite []string
@@ -43,6 +44,7 @@ var dnsSite DnsSite
 var SmtpServer string
 var Port string
 var From string
+var s cust.CustomerService
 
 func CheckVariation() (ReqRatio, LegRatio float64) {
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&kind=60&length=24&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=cddInfoData"
@@ -316,40 +318,75 @@ func MonitorBandwidth() {
 	var m map[string][][]int
 	var url_arr []string
 	var errMsg []string
-	length := "5"
+	length := "11"
 	tmpurl := "https://g2api.nexusguard.com/API/Proxy?cust_id=%s&site_id=%s&length=%s&type=NetflowBandwidth"
 	tmperr := " has zero Bandwidth recent 10 minutes"
 	FilterSiteArray := make(map[string]bool)
-
-	for i, _ := range customer.List {
-		for _, site := range customer.List[i].SiteAliasList {
+	for i, _ := range s.Customers {
+		for _, site := range s.Customers[i].Sites {
 			for _, filterSiteName := range FilterSiteList {
-				if filterSiteName == site {
-					FilterSiteArray[site] = true
+				if filterSiteName == site.SiteName {
+					FilterSiteArray[site.SiteName] = true
 				}
 			}
 		}
 	}
 
-	for i, _ := range customer.List {
-		CId := customer.List[i].MoId
-		MoAlias := customer.List[i].MoAlias
+	/* for i, _ := range customer.List {*/
+	//for _, site := range customer.List[i].SiteAliasList {
+	//for _, filterSiteName := range FilterSiteList {
+	//if filterSiteName == site {
+	//FilterSiteArray[site] = true
+	//}
+	//}
+	//}
+	//}
+
+	for i, _ := range s.Customers {
+		CId := i
+		//fmt.Println(CId)
+		//fmt.Println(s.Customers[i].Name)
+		MoAlias := s.Customers[i].Name
 		for j, _ := range cfg.MonitorBand.MonitorList {
 			if MoAlias == cfg.MonitorBand.MonitorList[j] {
-				for s, SId := range customer.List[i].SiteList {
-					siteAlias := customer.List[i].SiteAliasList[s]
+				for si, site := range s.Customers[i].Sites {
+					//fmt.Println(site.SiteID)
+					//fmt.Println(site.SiteName)
+					SId := site.SiteID
+					siteAlias := site.SiteName
 					if FilterSiteArray[siteAlias] == true {
 						continue
 					}
-					fmt.Println(siteAlias)
 					urlstr := fmt.Sprintf(tmpurl, CId, SId, length)
 					url_arr = append(url_arr, urlstr)
-					errstr := "[Monitor Bandwidth]" + "[" + MoAlias + "] - " + customer.List[i].SiteAliasList[s] + tmperr
+					errstr := "[Monitor Bandwidth]" + "[" + MoAlias + "] - " + s.Customers[i].Sites[si].SiteName + tmperr
 					errMsg = append(errMsg, errstr)
 				}
 			}
 		}
 	}
+	//fmt.Println(url_arr)
+	//fmt.Println(errMsg)
+
+	//for i, _ := range customer.List {
+	//CId := customer.List[i].MoId
+	//MoAlias := customer.List[i].MoAlias
+	//for j, _ := range cfg.MonitorBand.MonitorList {
+	//if MoAlias == cfg.MonitorBand.MonitorList[j] {
+	//for s, SId := range customer.List[i].SiteList {
+	//siteAlias := customer.List[i].SiteAliasList[s]
+	//if FilterSiteArray[siteAlias] == true {
+	//continue
+	//}
+	//fmt.Println(siteAlias)
+	//urlstr := fmt.Sprintf(tmpurl, CId, SId, length)
+	//url_arr = append(url_arr, urlstr)
+	//errstr := "[Monitor Bandwidth]" + "[" + MoAlias + "] - " + customer.List[i].SiteAliasList[s] + tmperr
+	//errMsg = append(errMsg, errstr)
+	//}
+	//}
+	//}
+	/*}*/
 
 	//errMsg[0] = "AAH has zero Bandwidth recent 10 minutes"
 	//errMsg[1] = "HKP has zero Bandwidth recent 10 minutes"
@@ -375,12 +412,19 @@ func MonitorBandwidth() {
 				if err != nil {
 					fmt.Println(err)
 				}
-				m2 := m["NetflowBandwidth"][:3] //the last two value must be zero, trim
-				fmt.Println(m2)
+				m2 := m["NetflowBandwidth"][:len(m["NetflowBandwidth"])-2] //the last two value must be zero, trim
+				cnt := 0
 				for _, val := range m2 {
 					if val[1] == 0 {
-						SendHTMLMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
-						//SendMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u], rspStatus)
+						cnt++
+						if cnt >= len(m2)/3 {
+							fmt.Println("cnt: ", cnt)
+							fmt.Println(m2)
+							fmt.Println(url)
+							fmt.Println(errMsg[u])
+							SendHTMLMail(SmtpServer, Port, From, To, errMsg[u], errMsg[u])
+							break
+						}
 					}
 				}
 			}
@@ -520,42 +564,6 @@ func MonitorDataCenter(seconds int, To []string) {
 		time.Sleep(time.Duration(seconds) * time.Second) //240 sec
 	} // forever loop
 }
-
-/*Read api.gcfg config*/
-func ConfigInit() {
-	url := fmt.Sprintf("https://%s/api/customer/list/%s", cfg.Gen.GCenter, GetToken())
-	customer.mu.Lock()
-	customer.List = getCustomers(url)
-	//fmt.Println(customer.List)
-	//SiteHttpList
-	//SiteHttpsList
-	for i, _ := range customer.List {
-		SId := customer.List[i].SiteAliasList
-		Https := customer.List[i].SiteHttpsList
-		Http := customer.List[i].SiteHttpList
-		//fmt.Println(SId)
-		for i, site := range SId {
-			if Https[i] == "443" {
-				site_https := "https://" + site
-				allCustomerSite = append(allCustomerSite, site_https)
-				//fmt.Println(site_https)
-			}
-			if Http[i] == "80" {
-				site_http := "http://" + site
-				allCustomerSite = append(allCustomerSite, site_http)
-				//fmt.Println(site_http)
-			}
-		}
-	}
-	allCustomerSite = removeDuplicates(allCustomerSite)
-
-	//customer.mu.Unlock()
-	//url = fmt.Sprintf("http://%s/api/customer/list/%s", cfg.Gen.GCenterPrd, GetToken())
-	//prdList := getCustomers(url)
-	//customer.List = append(customer.List,prdList... )
-	//customer.mu.Unlock()
-}
-
 func CheckCacheRatio() {
 
 	var myClient = &http.Client{
@@ -987,7 +995,6 @@ func GetReport() {
 					Title := "[Report] " + MoAlias
 					Body := cidcontent
 					SendHTMLMail(SmtpServer, Port, From, To, Title, Body)
-					os.Exit(0)
 				} // if Monitor == true
 			} // for CID
 		} //if Now == CheckTime
@@ -1013,24 +1020,59 @@ func GetReport() {
 	} //Forever loop
 }
 
-func main() {
-	debug = flag.Bool("debug", false, "Show debug information.")
-	flag.Parse()
+/* ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite */
+func init() {
+	funcname := "init"
 	err := gcfg.ReadFileInto(&cfg, *configFile)
 	if err != nil {
 		log.Fatalf("Fail to load config file: %s\n", err)
 	}
+	url := cfg.CWapi.Url
+	info_url := fmt.Sprintf("http://%s/info", url)
+
+	content, err := HttpsGet(info_url, funcname)
+	if err != nil {
+		fmt.Println("ERROR: [%s]: HttpsGet-> %v", funcname, err.Error())
+	}
+	err = json.Unmarshal(content, &s.Customers)
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+
+	//customer.mu.Lock()
+	//customer.List = getCustomers(url)
+
+	////fmt.Println(customer.List)
+	////SiteHttpList
+	////SiteHttpsList
+
+	//for i, _ := range customer.List {
+	//SId := customer.List[i].SiteAliasList
+	//Https := customer.List[i].SiteHttpsList
+	//Http := customer.List[i].SiteHttpList
+	////fmt.Println(SId)
+	//for i, site := range SId {
+	//if Https[i] == "443" {
+	//site_https := "https://" + site
+	//allCustomerSite = append(allCustomerSite, site_https)
+	////fmt.Println(site_https)
+	//}
+	//if Http[i] == "80" {
+	//site_http := "http://" + site
+	//allCustomerSite = append(allCustomerSite, site_http)
+	////fmt.Println(site_http)
+	//}
+	//}
+	//}
+	/*allCustomerSite = removeDuplicates(allCustomerSite)*/
+}
+
+func main() {
+	debug = flag.Bool("debug", false, "Show debug information.")
+	flag.Parse()
 	CheckDir()
 	customer = &Customers{mu: &sync.Mutex{}}
-	ConfigInit() //Read api.gcfg config, get customer.List & allCustomerSite
-	syslogSender = &SyslogSender{key: []byte(cfg.System.Key)}
 
-	/*GetReport()
-	for {
-		time.Sleep(60 * time.Second)
-	}
-	os.Exit(0)
-	*/
 	SmtpServer = cfg.Mail.SmtpServer
 	Port = cfg.Mail.Port
 	From = cfg.Mail.From
@@ -1042,10 +1084,10 @@ func main() {
 
 	//===================== Portal Customer Bandwidth ===================
 	go MonitorBandwidth()
-	// for {
-	// 	time.Sleep(60 * time.Second)
-	// }
-	// os.Exit(0)
+	for {
+		time.Sleep(60 * time.Second)
+	}
+	os.Exit(0)
 
 	go MonitorG2Server(Url, IntervalSeconds, To1)
 
@@ -1060,84 +1102,4 @@ func main() {
 	// ==================== Portal DataCenter =======================
 	IntervalSeconds0 := cfg.MonitorDC.IntervalSeconds
 	go MonitorDataCenter(IntervalSeconds0, To1)
-
-/*
-	CheckTime := cfg.CheckVariation.CheckTime
-	for {
-		//MonitorVariation(CheckTime)
-		//GetReport()
-		time.Sleep(60 * time.Second)
-	}
-*/
-
-	//var cfg Config  //for main internal use only, has another Global cfg object
-	//var Url string
-	//var IntervalSeconds int
-	//var filename string
-	//var separateSymbol rune
-	//var combineSymbol string
-	//var colNum int
-	//cfgFile := "./etc/ini.gcfg"
-	/*
-		_, err = os.Stat("./log")
-		if err != nil {
-			log.Println("Directory log not exist, create log dir")
-			err := os.Mkdir("./log",0777)
-			if err != nil{ os.Exit(1)}
-		}
-	*/
-	//cfg = LoadConfiguration(cfgFile)
-	//SmtpServer1 := cfg.Monitorg2.SmtpServer
-	//Port1 := cfg.Monitorg2.Port
-	//From1 := cfg.Monitorg2.From
-
-	//filename = "./assetsList/assets.tsv"
-	//separateSymbol = '\t'
-	//combineSymbol = "@ "
-	//colNum = 1
-	//Url = readCsv(filename, separateSymbol, combineSymbol, colNum)
-
-	//var cfg2 Config
-	//var IntervalSeconds2 int
-	//cfgFile2 := "./etc/customer_ini.gcfg"
-	//_, err = os.Stat("./csmlog")
-	//if err != nil {
-	//	log.Println("Directory log not exist, create log dir")
-	//	err := os.Mkdir("./csmlog",0777)
-	//	if err != nil{
-	//		os.Exit(1)
-	//	}
-	//}
-	//cfg2 = LoadConfiguration(cfgFile2)
-	//SmtpServer2 := cfg2.Server.SmtpServer
-	//Port2 := cfg2.Server.Port
-	//From2 := cfg2.Server.From
-	//To2 := cfg2.Server.To
-
-	//filename = "./assetsList/csm_assets.tsv"
-	//separateSymbol = '\t'
-	//combineSymbol = "@ "
-	//colNum = 6
-	//Url2 = readCsv(filename, separateSymbol, combineSymbol, colNum)
-	//Url2 = allCustomerSite
-
-	/*	cfgFile2 := "./etc/customer_ini.gcfg"
-		cfg2 := LoadConfiguration(cfgFile2)
-		SmtpServer := cfg2.Server.SmtpServer
-		Port := cfg2.Server.Port
-		From := cfg2.Server.From
-		To := cfg2.Server.To
-	*/
-
-	//===================== api server bandwidth ===================
-	/*
-		IntervalSeconds3 := cfg.MonitorBand.IntervalSeconds
-		SmtpServer3 := cfg.MonitorBand.SmtpServer
-		Port3 := cfg.MonitorBand.Port
-		From3 := cfg.MonitorBand.From
-		To3 := cfg.MonitorBand.To
-		//IntervalSeconds3 := 120
-		go MonitorBandwidth(IntervalSeconds3, SmtpServer3, Port3, From3, To3)
-	*/
-
 }

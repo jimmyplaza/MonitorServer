@@ -148,22 +148,24 @@ IntervalSeconds = 240
 [monitorband]
 ;Band Width
 monitorList = AAH
-;monitorList = EDB
-;monitorList = MDZ 
+monitorList = MDZ 
 
+;monitorList = EDB
 ;monitorList = HTB 
 ;monitorList = HKOGCIO 
 ;monitorList = HKP 
+
 filterSiteList = www.monspacea.com.my
+filterSiteList = www.ysmids.com
+filterSiteList = UAT
 
 IntervalSeconds = 120 
 SmtpServer = smtp.gmail.com
 Port = 465
 From = g2.service@nexusguard.com
 To = jimmy.ko@nexusguard.com
-To = chris.liu@nexusguard.com
-To = steve.tsai@nexusguard.com 
-To = matis.hsiao@nexusguard.com
+;To = terry.huang@nexusguard.com
+;To = chris.liu@nexusguard.com
 
 [monitorCustomerSite]
 IntervalSeconds = 120 
@@ -180,6 +182,8 @@ To = matis.hsiao@nexusguard.com
 FilterCustomer = Riche88
 FilterCustomer = IMH 
 
+[cwapi]
+url = 104.155.234.229
 
 [gen]
 http = 443 

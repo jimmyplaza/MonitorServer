@@ -2,22 +2,23 @@ package main
 
 import (
 	"fmt"
-	"github.com/abh/geoip"
 	"sync"
+
+	"github.com/abh/geoip"
 	//"os"
 )
 
 type Nodes0 [][]int
 
 type Report0 struct {
-    Pageviews2           map[string]Nodes0
-    Visitors2            map[string]Nodes0
-    NetflowBandwidth     Nodes0
-    LiveThreatsChart     map[string]Nodes0
-    LiveReqsChart        map[string]Nodes0
-    LiveCacheChart       map[string]Nodes0
-    LiveLegitimatedChart map[string]Nodes0
-    LiveUpstreamChart    map[string]Nodes0
+	Pageviews2           map[string]Nodes0
+	Visitors2            map[string]Nodes0
+	NetflowBandwidth     Nodes0
+	LiveThreatsChart     map[string]Nodes0
+	LiveReqsChart        map[string]Nodes0
+	LiveCacheChart       map[string]Nodes0
+	LiveLegitimatedChart map[string]Nodes0
+	LiveUpstreamChart    map[string]Nodes0
 }
 
 type JsonType struct {
@@ -78,7 +79,7 @@ type cfgObject struct {
 		CheckTime       string
 		IntervalSeconds int
 		To              []string
-		ReportList 	[]string
+		ReportList      []string
 	}
 	DnsCheck struct {
 		IntervalSeconds int
@@ -127,7 +128,7 @@ type cfgObject struct {
 	}
 	MonitorBand struct {
 		MonitorList     []string
-		FilterSiteList     []string
+		FilterSiteList  []string
 		IntervalSeconds int
 		SmtpServer      string
 		Port            string
@@ -136,6 +137,9 @@ type cfgObject struct {
 	}
 	Monitor struct {
 		FilterList string
+	}
+	CWapi struct {
+		Url string
 	}
 	Gen struct {
 		Http       int

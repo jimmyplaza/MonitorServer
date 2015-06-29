@@ -4,32 +4,31 @@ import (
 	"encoding/csv"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
-	"code.google.com/p/gcfg"
-	"log"
 	"time"
+
+	"code.google.com/p/gcfg"
 	//"net"
 	//"net/http"
 	//"io/ioutil"
 	//"crypto/tls"
 	"encoding/json"
-	"sync"
 	"os/exec"
+	"sync"
 )
 
 type Config struct {
-    Server struct {
-		    Url string
-    		IntervalSeconds int 
-    		SmtpServer string
-    		Port uint
-    		From string
-    		To string
-    }
+	Server struct {
+		Url             string
+		IntervalSeconds int
+		SmtpServer      string
+		Port            uint
+		From            string
+		To              string
+	}
 }
-
-
 
 func WriteToLogFile(remote string, msg, responseTime, filepath string) {
 	logMsg := "[" + remote + "] , " + msg + " , " + responseTime + " , "
@@ -94,18 +93,14 @@ func WriteToJsonFile(jj JsonType) {
 
 }
 
-
-
-func WriteToSyslog(level int, remote string, msg string) {
-	logMsg := "[" + remote + "]:" + msg
-	fmt.Println("logMsg: ", logMsg)
-	if *debug {
-		fmt.Println(logMsg)
-	}
-	syslogSender.Write("udp", cfg.System.Syslog, level, "MonitorSys", logMsg)
-}
-
-
+//func WriteToSyslog(level int, remote string, msg string) {
+//logMsg := "[" + remote + "]:" + msg
+//fmt.Println("logMsg: ", logMsg)
+//if *debug {
+//fmt.Println(logMsg)
+//}
+//syslogSender.Write("udp", cfg.System.Syslog, level, "MonitorSys", logMsg)
+/*}*/
 
 /*
 func timeoutDialer(cTimeout, rwTimeout time.Duration) func(net, addr string) (c net.Conn, err error) {
@@ -147,28 +142,28 @@ func HttpsGet(url string, funcName string) (rspcontent []byte, err error) {
 */
 
 func CheckDir() {
-        _, err := os.Stat("./log")
-        if err != nil {
-                fmt.Println("Directory log not exist, create log dir")
-                err := os.Mkdir("./log", 0777)
-                if err != nil {
-                        os.Exit(1)
-                }
-        }
-        _, err = os.Stat("./csmlog")
-        if err != nil {
-                fmt.Println("Directory csmlog not exist, create log dir")
-                err := os.Mkdir("./csmlog", 0777)
-                if err != nil {
-                        os.Exit(1)
-                }
-        }
+	_, err := os.Stat("./log")
+	if err != nil {
+		fmt.Println("Directory log not exist, create log dir")
+		err := os.Mkdir("./log", 0777)
+		if err != nil {
+			os.Exit(1)
+		}
+	}
+	_, err = os.Stat("./csmlog")
+	if err != nil {
+		fmt.Println("Directory csmlog not exist, create log dir")
+		err := os.Mkdir("./csmlog", 0777)
+		if err != nil {
+			os.Exit(1)
+		}
+	}
 }
 
 func GetToken() string {
-        t1 := &Token{User: "APIServer", Action: "API", Value: "Token", DF: "G-Center"}
-        t1.Make()
-        return t1.String()
+	t1 := &Token{User: "APIServer", Action: "API", Value: "Token", DF: "G-Center"}
+	t1.Make()
+	return t1.String()
 }
 
 /*
@@ -184,57 +179,53 @@ func CheckToken(token string) bool {
         return true
 }
 */
-func LogMessage(msg string,level int){
-        timeStr := time.Now().Format("2006-01-02 15:04:05")
-        lvStr := "info"
-        switch level {
-                case 1:
-                        lvStr = "info"
-                case 2:
-                        lvStr = "warning"
-                case 3:
-                        lvStr = "error"
-                case 4:
-                        lvStr = "crit"
-                case 5:
-                        lvStr = "panic"
-        }
-        fmt.Printf("LogMessage [%s][%s][msg] %s\n",timeStr,lvStr,msg)
+func LogMessage(msg string, level int) {
+	timeStr := time.Now().Format("2006-01-02 15:04:05")
+	lvStr := "info"
+	switch level {
+	case 1:
+		lvStr = "info"
+	case 2:
+		lvStr = "warning"
+	case 3:
+		lvStr = "error"
+	case 4:
+		lvStr = "crit"
+	case 5:
+		lvStr = "panic"
+	}
+	fmt.Printf("LogMessage [%s][%s][msg] %s\n", timeStr, lvStr, msg)
 
 }
-
-
 
 func LoadConfiguration(cfgFile string) Config {
-    var err error
-    var cfg Config
+	var err error
+	var cfg Config
 
-    if cfgFile!= "" {
-        err = gcfg.ReadFileInto(&cfg, cfgFile)
-    }
-    if err != nil {
-        fmt.Println(err)
-        log.Printf("Failed to parse gcfg data: %s", err)
-        os.Exit(2)
-    } 
-    return cfg
+	if cfgFile != "" {
+		err = gcfg.ReadFileInto(&cfg, cfgFile)
+	}
+	if err != nil {
+		fmt.Println(err)
+		log.Printf("Failed to parse gcfg data: %s", err)
+		os.Exit(2)
+	}
+	return cfg
 }
 
-func removeDuplicates(a []string) []string { 
-        result := []string{} 
-        seen := map[string]string{} 
-        for _, val := range a { 
-                if _, ok := seen[val]; !ok { 
-                        result = append(result, val) 
-                        seen[val] = val 
-                } 
-        } 
-        return result 
-} 
+func removeDuplicates(a []string) []string {
+	result := []string{}
+	seen := map[string]string{}
+	for _, val := range a {
+		if _, ok := seen[val]; !ok {
+			result = append(result, val)
+			seen[val] = val
+		}
+	}
+	return result
+}
 
-
-
-func readCsv(filename string, separateSymbol rune, combineSymbol string, colNum int)(retStr string){
+func readCsv(filename string, separateSymbol rune, combineSymbol string, colNum int) (retStr string) {
 	file, err := os.Open(filename)
 	if err != nil {
 		// err is printable
@@ -247,9 +238,9 @@ func readCsv(filename string, separateSymbol rune, combineSymbol string, colNum 
 
 	reader := csv.NewReader(file)
 	reader.Comma = separateSymbol
-	//reader.Comma = '\t' 
+	//reader.Comma = '\t'
 	lineCount := 0
-	url_arr := []string{} 
+	url_arr := []string{}
 	for {
 		// read just one record, but we could ReadAll() as well
 		record, err := reader.Read()
@@ -266,7 +257,7 @@ func readCsv(filename string, separateSymbol rune, combineSymbol string, colNum 
 		if lineCount != 0 {
 			for i := 0; i < len(record); i++ {
 				if i == colNum {
-					if record[i] != ""{
+					if record[i] != "" {
 						//retStr = retStr + strings.TrimSpace(string(record[i])) + combineSymbol
 						url_arr = append(url_arr, strings.TrimSpace(string(record[i])))
 					}
@@ -274,13 +265,13 @@ func readCsv(filename string, separateSymbol rune, combineSymbol string, colNum 
 			}
 		}
 		lineCount += 1
-	}	
+	}
 	url_arr = removeDuplicates(url_arr)
 	for _, url := range url_arr {
 		retStr = retStr + url + combineSymbol
-	}	
+	}
 
-	retStr = retStr[:len(retStr) -2] 
+	retStr = retStr[:len(retStr)-2]
 	return retStr
 }
 
@@ -303,8 +294,8 @@ func exe_cmd(cmd string, wg *sync.WaitGroup) (output string) {
 /*
 func main() {
 	filename := "assets2.tsv"
-	//separateSymbol := "," 
-	separateSymbol := '\t' 
+	//separateSymbol := ","
+	separateSymbol := '\t'
 	combineSymbol := "@ "
 	colNum := 1
 	retStr := readCsv(filename, separateSymbol, combineSymbol, colNum)
