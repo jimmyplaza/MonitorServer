@@ -164,8 +164,8 @@ SmtpServer = smtp.gmail.com
 Port = 465
 From = g2.service@nexusguard.com
 To = jimmy.ko@nexusguard.com
-;To = terry.huang@nexusguard.com
-;To = chris.liu@nexusguard.com
+To = terry.huang@nexusguard.com
+To = chris.liu@nexusguard.com
 
 [monitorCustomerSite]
 IntervalSeconds = 120 
