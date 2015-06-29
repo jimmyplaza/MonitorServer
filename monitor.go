@@ -13,8 +13,9 @@ import (
 
 	"code.google.com/p/gcfg"
 
-	cust "ClearWatch2/libs/customer"
 	"net"
+
+	cust "MonitorServer/customer"
 
 	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
