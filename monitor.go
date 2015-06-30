@@ -362,7 +362,9 @@ func MonitorBandwidth() {
 	//url_arr[2] = "https://g2api.nexusguard.com/API/NetflowBandwidth/2?cust_id=C-6a44172e-3b5b-4981-a9d8-2f1b853b4c90&length=5"
 
 	for {
+		fmt.Println(time.Now())
 		for u, url := range url_arr { //monitor all url at array
+			fmt.Println(url)
 			response, err := myClient.Get(url)
 			if err != nil {
 				fmt.Printf("%s", err)

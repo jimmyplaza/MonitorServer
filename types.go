@@ -5,7 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/abh/geoip"
 	"github.com/garyburd/redigo/redis"
 	//"os"
 )
@@ -257,43 +256,44 @@ type TrackerRecord struct {
 	List map[string]int64
 }
 
-type TrackerObject struct {
-	CId         string
-	SId         string
-	FirstViewTs int64 //first view timestamp
-	UserId      string
-	Bot         string
-	Search      string
-	Views       int
-	Url         string
-	Referer     string
-	Traffic     string
-	Ms          int
-	Sec         int
-	Min         int
-	Hour        int
-	Ts          int64  // this time view timestamp
-	Window      string //borwser window size
-	NewVisitor  bool
-	Browser     string
-	ClientIP    string
-	Exists      bool
-	Online      bool
-	Device      string
-	GeoInfo     *geoip.GeoIPRecord
-}
+/*type TrackerObject struct {*/
+//CId         string
+//SId         string
+//FirstViewTs int64 //first view timestamp
+//UserId      string
+//Bot         string
+//Search      string
+//Views       int
+//Url         string
+//Referer     string
+//Traffic     string
+//Ms          int
+//Sec         int
+//Min         int
+//Hour        int
+//Ts          int64  // this time view timestamp
+//Window      string //borwser window size
+//NewVisitor  bool
+//Browser     string
+//ClientIP    string
+//Exists      bool
+//Online      bool
+//Device      string
+//GeoInfo     *geoip.GeoIPRecord
+//}
 
 //WAF
-type CheckCountData struct {
-	SiteId string
-	Module string
-	Mode   string
-	Info   *CountInfo
-}
-type CountInfo struct {
-	Id      string
-	Client  string
-	GeoInfo *geoip.GeoIPRecord
-	Host    string
-	Data    []string
-}
+/*type CheckCountData struct {*/
+//SiteId string
+//Module string
+//Mode   string
+//Info   *CountInfo
+/*}*/
+
+/*type CountInfo struct {*/
+//Id      string
+//Client  string
+//GeoInfo *geoip.GeoIPRecord
+//Host    string
+//Data    []string
+/*}*/
