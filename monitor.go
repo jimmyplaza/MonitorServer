@@ -15,8 +15,6 @@ import (
 
 	"net"
 
-	cust "MonitorServer/customer"
-
 	"github.com/dustin/go-humanize"
 	"github.com/jmoiron/jsonq"
 
@@ -45,7 +43,7 @@ var dnsSite DnsSite
 var SmtpServer string
 var Port string
 var From string
-var s cust.CustomerService
+var s CustomerService
 
 func CheckVariation() (ReqRatio, LegRatio float64) {
 	url := "https://g2api.nexusguard.com/API/Proxy?cust_id=C-a4c0f8fd-ccc9-4dbf-b2dd-76f466b03cdb&kind=60&length=24&site_id=S-44a17b93-b9b3-4356-ab21-ef0a97c8f67d&type=cddInfoData"
@@ -333,16 +331,6 @@ func MonitorBandwidth() {
 		}
 	}
 
-	/* for i, _ := range customer.List {*/
-	//for _, site := range customer.List[i].SiteAliasList {
-	//for _, filterSiteName := range FilterSiteList {
-	//if filterSiteName == site {
-	//FilterSiteArray[site] = true
-	//}
-	//}
-	//}
-	//}
-
 	for i, _ := range s.Customers {
 		CId := i
 		//fmt.Println(CId)
@@ -366,29 +354,6 @@ func MonitorBandwidth() {
 			}
 		}
 	}
-	//fmt.Println(url_arr)
-	//fmt.Println(errMsg)
-
-	//for i, _ := range customer.List {
-	//CId := customer.List[i].MoId
-	//MoAlias := customer.List[i].MoAlias
-	//for j, _ := range cfg.MonitorBand.MonitorList {
-	//if MoAlias == cfg.MonitorBand.MonitorList[j] {
-	//for s, SId := range customer.List[i].SiteList {
-	//siteAlias := customer.List[i].SiteAliasList[s]
-	//if FilterSiteArray[siteAlias] == true {
-	//continue
-	//}
-	//fmt.Println(siteAlias)
-	//urlstr := fmt.Sprintf(tmpurl, CId, SId, length)
-	//url_arr = append(url_arr, urlstr)
-	//errstr := "[Monitor Bandwidth]" + "[" + MoAlias + "] - " + customer.List[i].SiteAliasList[s] + tmperr
-	//errMsg = append(errMsg, errstr)
-	//}
-	//}
-	//}
-	/*}*/
-
 	//errMsg[0] = "AAH has zero Bandwidth recent 10 minutes"
 	//errMsg[1] = "HKP has zero Bandwidth recent 10 minutes"
 	//errMsg[2] = "EDB has zero Bandwidth recent 10 minutes"
@@ -418,7 +383,7 @@ func MonitorBandwidth() {
 				for _, val := range m2 {
 					if val[1] == 0 {
 						cnt++
-						if cnt >= len(m2)/3 {
+						if cnt >= len(m2)/3*2 {
 							fmt.Println("cnt: ", cnt)
 							fmt.Println(m2)
 							fmt.Println(url)

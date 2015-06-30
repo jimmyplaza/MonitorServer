@@ -3,10 +3,40 @@ package main
 import (
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/abh/geoip"
+	"github.com/garyburd/redigo/redis"
 	//"os"
 )
+
+type CWCustomer struct {
+	Id    string    `json:"id"`
+	Name  string    `json:"name"`
+	Sites []*CWSite `json:"sites"`
+}
+
+// CWSite struct for clearwatch
+type CWSite struct {
+	CID         string   `json:"cid"`
+	SiteID      string   `json:"siteid"`
+	SiteName    string   `json:"sitename"`
+	BP          bool     `json:"bp"`
+	VIPS        []string `json:"vip"`
+	ServiceType string   `json:"servicetype"`
+}
+
+type CustomerService struct {
+	Customers   map[string]*CWCustomer
+	Sites       map[string]*CWSite
+	VipMap      map[string]string
+	IDCMap      map[string]string
+	gcenterUrl  string
+	servicetype int
+	store       *redis.Pool
+	Timestamp   time.Time
+	sync.RWMutex
+}
 
 type Nodes0 [][]int
 
